@@ -1,0 +1,117 @@
+
+<openerp>
+    <data>
+
+    <record id="res_partner_sale_history" model="ir.ui.view">
+        <field name="name">res.partner.sale.history</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form" />
+        <field name="priority" eval="20"/>
+
+        <field name="arch" type="xml">
+        <xpath expr="//form//sheet" position="before">
+            <header>
+                <button class="oe_highlight" type="object" name="open_tree_view" string="Sale History"
+                 attrs="{'invisible': [('res_person_id', '=', False)]}" />
+            </header>
+            </xpath>
+            <xpath expr="//field[@name='email']" position="after">
+<!--                <field name="res_person_id"/>-->
+<!--                <field name="gst_no" attrs="{'invisible': [('customer','=',False)],'required':[('b2b','=',True)]}"/>-->
+<!--                <field name="drug_license_number" attrs="{'invisible': [('customer','=',False)]}"/>-->
+            </xpath>
+            <xpath expr="//field[@name='website']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//field[@name='street2']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//field[@name='city']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//field[@name='state_id']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//field[@name='zip']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//field[@name='country_id']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//field[@name='street']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//label[@string='Address']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//field[@name='website']" position="after">
+                <field name="address_new"/>
+                <field name="res_person_id"/>
+                <field name="gst_no" attrs="{'invisible': [('customer','=',False)],'required':[('b2b','=',True)]}"/>
+                <field name="drug_license_number" attrs="{'invisible': [('customer','=',False)]}"/>
+                <field name="b2c" attrs="{'invisible': [('customer','=',False)]}"/>
+                <field name="b2b" attrs="{'invisible': [('customer','=',False)]}" readonly="0"/>
+                <field name="interstate_customer" attrs="{'invisible': [('customer','=',False)]}"/>
+                <field name="local_customer" attrs="{'invisible': [('customer','=',False)]}"/>
+            </xpath>
+        </field>
+    </record>
+
+        <record id="view_invoice_cust_inherit_line_id" model="ir.ui.view">
+        <field name="name">account.invoice.form</field>
+        <field name="model">account.invoice</field>
+        <field name="inherit_id" ref="account.invoice_form"/>
+        <field name="arch" type="xml">
+                    <xpath expr="//field[@name='date_invoice']" position="after">
+                        <field name="res_person" domain="[('res_person_id', '=', True)]"/>
+                        <field name="doctor_name"/>
+
+
+                    </xpath>
+                    <xpath expr="//field[@name='journal_id']" position="after">
+                        <field name="b2c" invisible="1"/>
+                        <field name="b2b" invisible="1" />
+                    </xpath>
+                    <xpath expr="//field[@name='account_id']" position="after">
+                        <field name="address_new"/>
+                        <field name="interstate_customer" invisible="1"/>
+                        <field name="local_customer" invisible="1"/>
+                        <field name="bill_nature" invisible="1"/>
+                    </xpath>
+        </field>
+        </record>
+        <record model="ir.ui.view" id="edit_partner_form_customer_inherit_tree_1">
+        <field name="name">Customer Invoice</field>
+        <field name="model">account.invoice</field>
+        <field name="inherit_id" ref="account.invoice_tree"/>
+        <field name="arch" type="xml">
+             <xpath expr="//field[@name='date_invoice']" position="after">
+                  <field name="res_person" />
+          </xpath>
+        </field>
+        </record>
+
+        <record id="view_invoice_supplier_addresss_id" model="ir.ui.view">
+        <field name="name">account.invoice.form</field>
+        <field name="model">account.invoice</field>
+        <field name="inherit_id" ref="account.invoice_supplier_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='partner_id']" position="after">
+                        <field name="address_new"/>
+            </xpath>
+
+        </field>
+        </record>
+
+        <record id="action_inv_responsible" model="ir.actions.act_window">
+            <field name="name">Sale Responsible Persons</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">res.partner</field>
+            <field name="view_mode">tree,form</field>
+            <field name="domain">[('res_person_id','=',True)]</field>
+        </record>
+        <menuitem action="action_inv_responsible" id="menu_customers"
+                              name="Responsible Persons-Sale"
+                              sequence="2" parent="invoice_stock_move.menu_med_features_2_child"/>
+    </data>
+</openerp>

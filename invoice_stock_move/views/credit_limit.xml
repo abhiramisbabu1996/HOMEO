@@ -1,0 +1,28 @@
+<openerp>
+    <data>
+<!--        <record id="view_invoice_cust_inherit_line_id" model="ir.ui.view">-->
+<!--        <field name="name">account.invoice.form</field>-->
+<!--        <field name="model">account.invoice</field>-->
+<!--        <field name="inherit_id" ref="account.invoice_form"/>-->
+<!--        <field name="arch" type="xml">-->
+<!--        </field>-->
+<!--        </record>-->
+
+        <record id="res_partner_credit_limit" model="ir.ui.view">
+        <field name="name">res.partner.credit</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form" />
+        <field name="priority" eval="20"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='email']" position="after">
+                    <field name="limit_amt"/>
+                    <field name="used_credit_amt"/>
+                </xpath>
+
+            </field>
+        </record>
+
+
+
+    </data>
+</openerp>
