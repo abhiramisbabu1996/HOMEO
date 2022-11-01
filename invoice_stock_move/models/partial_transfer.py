@@ -15,6 +15,8 @@ class PartialTransfer(models.TransientModel):
 
     @api.multi
     def load_lines(self):
+        self.stock_part_id = False
+        # self.write({'stock_part_id':False})
         # stock_obj = self.env['entry.stock'].search([])
         stock_obj = self.env['entry.stock'].search([('rack', '=', self.racks_id_1.id)])
         if stock_obj:
@@ -44,46 +46,49 @@ class PartialTransfer(models.TransientModel):
             'target': 'new',
         }
 
-    # @api.multi
-    # def part_transfer(self):
-    #     print("welcome")
-    #     stock_obj = self.env['entry.stock'].search([('rack', '=', self.racks_id_1.id)])
-    #     if stock_obj:
-    #         # for rec in stock_obj:
-    #         for item in self.stock_part_id:
-    #             # if (rec.medicine_1.id == item.medicine_1.id) and (rec.potency.id == item.potency.id) and (rec.medicine_name_packing.id == item.medicine_name_packing.id)and(rec.company.id == item.company.id)and (rec.batch_2.id == item.batch_2.id):
-    #                 # new_qty = rec.qty - item.qty_transfer
-    #                 # rec.write({'qty':0})
-    #                 item.entry_stock_id.qty -= float(item.qty_transfer)
-    #
-    #         #         vals={
-    #         #         'qty': round(rec.qty, 0),
-    #         #         'name': rec.medicine_1.name,
-    #         #         'medicine_1': rec.medicine_1.id,
-    #         #         'potency': rec.potency.id,
-    #         #         'medicine_name_packing': rec.medicine_name_packing.id,
-    #         #         'company': rec.company.id,
-    #         #         'batch_2': rec.batch_2.id,
-    #         #         'entry_stock_id': rec.id,
-    #         #     }
-    #         # stock_obj
-    #
-    #
-    #         # rec.write({'rack': self.racks_id_2.id})
-    #         # rec.write({'qty':})
-    #         for rec in self:
-    #             rec.write({'stock_part_id': [(5, 0, 0)]})
-    #
-    #     return {
-    #         'context': self.env.context,
-    #         'view_type': 'form',
-    #         'view_mode': 'form',
-    #         'res_model': 'partial.transferr',
-    #         'res_id': self.id,
-    #         'view_id': False,
-    #         'type': 'ir.actions.act_window',
-    #         'target': 'new',
-    #     }
+    @api.multi
+    def part_transfer(self):
+        print("self.stock_part_id")
+        print("welcome")
+        stock_obj = self.env['entry.stock'].search([('rack', '=', self.racks_id_1.id)])
+        if stock_obj:
+            for item in self.stock_part_id:
+                item.entry_stock_id.qty -= float(item.qty_transfer)
+                if item.qty_transfer:
+                    vals={
+                        'qty': item.qty_transfer,
+                        'name': item.medicine_1.name,
+                        'medicine_1': item.medicine_1.id,
+                        'potency': item.potency.id,
+                        'medicine_name_packing': item.medicine_name_packing.id,
+                        'company': item.company.id,
+                        'batch_2': item.batch_2.id,
+                        'entry_stock_id': item.id,
+                        'medicine_grp1':item.entry_stock_id.medicine_grp1.id,
+                        'mrp':item.entry_stock_id.mrp,
+                        'manf_date':item.entry_stock_id.manf_date,
+                        'expiry_date':item.entry_stock_id.expiry_date,
+                        'invoice_line_tax_id4':item.entry_stock_id.invoice_line_tax_id4,
+                        'rack':self.racks_id_2.id,
+
+                    }
+                    self.env['entry.stock'].create(vals)
+
+            # rec.write({'rack': self.racks_id_2.id})
+            # rec.write({'qty':})
+            for rec in self:
+                rec.write({'stock_part_id': [(5, 0, 0)]})
+
+        return {
+            'context': self.env.context,
+            'view_type': 'form',
+            'view_mode': 'form',
+            'res_model': 'partial.transferr',
+            'res_id': self.id,
+            'view_id': False,
+            'type': 'ir.actions.act_window',
+            'target': 'new',
+        }
 
 
 class PartTranserNew(models.TransientModel):
