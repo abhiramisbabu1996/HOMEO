@@ -5,8 +5,6 @@
             <field name="res_model">entry.stock</field>
             <field name="view_type">form</field>
             <field name="view_mode">tree</field>
-<!--            <field name="view_id">new_stock_entry_tree_id_js</field>-->
-            <field name="view_id" ref="invoice_stock_move.new_stock_entry_tree_id_js"/>
             <field name="target">new</field>
         </record>
         <record model="ir.actions.act_window" id="action_test_id">
@@ -121,8 +119,8 @@
 <!--                 <button name="action_product_search_id" type="object" string="Product Search" class="oe_edit_only"/>-->
 <!--                 <button name="%(action_test_id)d" type="action" string="Test Search" class="oe_edit_only"/>-->
 <!--                 <button name="tree_stock" type="object" string="Search in Stock" class="oe_edit_only"/>original-->
-                 <button id="my_cus_button" name="%(wiz_tree)d" type="action" string="Search Stock" class="oe_edit_only"/>
-                 <field name="search_items" class="flexdatalist-json" invisible="1"/>
+                 <button name="%(wiz_tree)d" type="action" string="Search Stock" class="oe_edit_only"/>
+                 <field name="search_items" class="flexdatalist-json"/>
              </xpath>
 
 

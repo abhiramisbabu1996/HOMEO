@@ -1,7 +1,6 @@
 from openerp import models, fields, api
 
 
-
 class AccountInvoice(models.Model):
     _inherit = 'account.invoice'
 
@@ -56,7 +55,7 @@ class AccountInvoice(models.Model):
             'view_mode': 'form',
             'res_model': 'entry.stock',
             'res_id': self.id,
-            'view_id': 'invoice_stock_move.new_stock_entry_tree_id_js',
+            'view_id': False,
             'type': 'ir.actions.act_window',
             'target': 'new',
         }
