@@ -18,6 +18,7 @@
              'security/ir.model.access.csv',
              'views/menu.xml',
              'views/rack_transfer.xml',
+             'views/partial_transfer.xml',
              'views/credit_limit.xml',
              'views/invoice_history.xml',
              'views/invoice_stock_move_view.xml',

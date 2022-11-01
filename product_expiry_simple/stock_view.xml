@@ -19,22 +19,22 @@
     </field>
 </record>
 
-<record id="view_production_lot_tree" model="ir.ui.view">
-    <field name="name">product_expiry_simple.stock.production.lot.tree</field>
-    <field name="model">stock.production.lot</field>
-    <field name="inherit_id" ref="stock.view_production_lot_tree"/>
-    <field name="arch" type="xml">
-        <field name="ref" position="before">
-            <field name="expiry_date"/>
-            <field name="manf_date"/>
-            <field name="alert_date"/>
-        </field>
-        <xpath expr="/tree" position="attributes">
-            <attribute name="colors">red:expiry_date and expiry_date &lt; current_date;blue:current_date >= alert_date;green:alert_date > current_date</attribute>
-<!--            <attribute name="colors">red:expiry_date and expiry_date &lt; current_date;green:expiry_date &gt;= current_date and current_date > alert_date;blue:alert_date > current_date and current_date > expiry_date;</attribute>-->
-        </xpath>
-    </field>
-</record>
+<!--<record id="view_production_lot_tree" model="ir.ui.view">-->
+<!--    <field name="name">product_expiry_simple.stock.production.lot.tree</field>-->
+<!--    <field name="model">stock.production.lot</field>-->
+<!--    <field name="inherit_id" ref="stock.view_production_lot_tree"/>-->
+<!--    <field name="arch" type="xml">-->
+<!--        <field name="ref" position="before">-->
+<!--            <field name="expiry_date"/>-->
+<!--            <field name="manf_date"/>-->
+<!--            <field name="alert_date"/>-->
+<!--        </field>-->
+<!--        <xpath expr="/tree" position="attributes">-->
+<!--            <attribute name="colors">red:expiry_date and expiry_date &lt; current_date;blue:current_date >= alert_date;green:alert_date > current_date</attribute>-->
+<!--&lt;!&ndash;            <attribute name="colors">red:expiry_date and expiry_date &lt; current_date;green:expiry_date &gt;= current_date and current_date > alert_date;blue:alert_date > current_date and current_date > expiry_date;</attribute>&ndash;&gt;-->
+<!--        </xpath>-->
+<!--    </field>-->
+<!--</record>-->
 
 <record id="search_product_lot_filter" model="ir.ui.view">
     <field name="name">product_expiry_simple.stock.production.lot.search</field>

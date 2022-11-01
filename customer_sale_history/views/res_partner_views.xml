@@ -2,6 +2,7 @@
 <openerp>
     <data>
 
+
     <record id="res_partner_sale_history" model="ir.ui.view">
         <field name="name">res.partner.sale.history</field>
         <field name="model">res.partner</field>

@@ -15,7 +15,36 @@
             <field name="name">Medicine Stocks Entry List</field>
             <field name="model">entry.stock</field>
             <field name="arch" type="xml">
-                <tree string="Stock Entry" editable="bottom">
+                <tree string="Stock Entry" editable="bottom" >
+                    <button name="call_function" string="Add" type="object" help="calls python function" />
+
+                    <field name="s_no" invisible="1"/>
+                    <field name="medicine_1"/>
+                    <field name="potency"/>
+                    <field name="medicine_name_packing"/>
+                    <field name="company"/>
+                    <field name="medicine_grp" invisible="1"/>
+                    <field name="medicine_grp1"/>
+                    <field name="qty" type="char"/>
+                    <field name="mrp" type="char"/>
+                    <field name="batch_2"/>
+                    <field name="manf_date"/>
+                    <field name="expiry_date"/>
+                    <field name="custom_qty" type="char"/>
+                    <field name="rack"/>
+                    <field name="hsn_code"/>
+                    <field name="invoice_line_tax_id4"/>
+                    <field name="qty_received"/>
+                    <field name="discount" invisible="1"/>
+                </tree>
+            </field>
+        </record>
+<!--        JS AKHIL-->
+        <record model="ir.ui.view" id="new_stock_entry_tree_id_js">
+            <field name="name">Medicine Stocks Entry List1</field>
+            <field name="model">entry.stock</field>
+            <field name="arch" type="xml">
+                <tree string="Stock Entry" editable="bottom" id="modal_view_stock_custom" >
                     <button name="call_function" string="Add" type="object" help="calls python function" />
 
                     <field name="s_no" invisible="1"/>
@@ -235,6 +264,14 @@
 <!--            <field name="view_id" ref="search_med_rack_loc"/>-->
 <!--            <field name="target">new</field>-->
         </record>
+        <record id="action_root_stock" model="ir.actions.act_window">
+            <field name="name">Medicine Stock Entry</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">entry.stock</field>
+            <field name="view_mode">tree,search,form</field>
+<!--            <field name="view_id" ref="search_med_rack_loc"/>-->
+<!--            <field name="target">new</field>-->
+        </record>
 
          <record id="action_create_stock_return_copy" model="ir.actions.act_window">
             <field name="name">Medicine Stock Entry</field>
@@ -411,6 +448,7 @@
         <menuitem  id="menu_med_main_supplier_invoice_1"
                   name="Supplier Invoices"
                   sequence="3"/>
+
         <menuitem  id="menu_med_main_supp"
                   name="Supplier"
                   sequence="1" parent="menu_med_main_supplier_invoice_1"/>
@@ -428,6 +466,17 @@
 
         <menuitem action="action_invoice_tree1" id="menu_med_main_customer_invoice"
                   name="Customer Invoice" parent="menu_med_main_cust"
+                  sequence="4"/>
+<!--        #################################-->
+        <menuitem id="r1"
+                  name="Stock Entry"
+                  sequence="9"/>
+        <menuitem id="r2"
+                  name="Products Stock Entry" parent="r1"
+                  sequence="1"/>
+
+        <menuitem action="action_create_stock_return_1" id="r3"
+                  name="Products" parent="r2"
                   sequence="4"/>
 
 
@@ -887,6 +936,18 @@
 <!--        <menuitem action="action_create_rack_return_1" id="menu_rack_find_med"-->
 <!--                              name="Medicine Racks and Stocks"-->
 <!--                              sequence="5" parent="menu_med_features_4"/>-->
+<!--         <menuitem  id="menu_product_stock_entry_id"-->
+<!--                  name="Stock Details"-->
+<!--                  sequence="8"/>-->
+<!--        <menuitem  id="menu_2"-->
+<!--                  name="Product Stock Entry" parent="menu_product_stock_entry_id"-->
+<!--                  />-->
+<!--         <menuitem  id="menu_3"-->
+<!--                  name="Product Stock Entry" parent="menu_2"-->
+<!--                  />-->
+<!--        <menuitem action="action_root_stock" id="menu_4"-->
+<!--                              name="Stock Entry"-->
+<!--                              parent="menu_3"/>-->
         <menuitem action="action_create_stock_return_1" id="menu_stock_find_med"
                               name="Product Stock Entry"
                               sequence="6" parent="menu_med_features_4"/>
