@@ -1,14 +1,14 @@
 from openerp import models, fields, api
 
 
-class PartialTransfer(models.TransientModel):
-    _name = 'partial.transferr'
+class PartialTransfer1(models.TransientModel):
+    _name = 'partial.transf'
 
     racks_id_1 = fields.Many2one('product.medicine.types', string='From')
     racks_id_2 = fields.Many2one('product.medicine.types', string='To')
     stock_part_id = fields.One2many(
-        comodel_name='partial.transfernew',
-        inverse_name='full_id',
+        comodel_name='partial.transfernew1',
+        inverse_name='full_id1',
         string=' ',
         store=True,
     )
@@ -39,7 +39,7 @@ class PartialTransfer(models.TransientModel):
             'context': self.env.context,
             'view_type': 'form',
             'view_mode': 'form',
-            'res_model': 'partial.transferr',
+            'res_model': 'partial.transf',
             'res_id': self.id,
             'view_id': False,
             'type': 'ir.actions.act_window',
@@ -83,7 +83,7 @@ class PartialTransfer(models.TransientModel):
             'context': self.env.context,
             'view_type': 'form',
             'view_mode': 'form',
-            'res_model': 'partial.transferr',
+            'res_model': 'partial.transf',
             'res_id': self.id,
             'view_id': False,
             'type': 'ir.actions.act_window',
@@ -91,8 +91,8 @@ class PartialTransfer(models.TransientModel):
         }
 
 
-class PartTranserNew(models.TransientModel):
-    _name = 'partial.transfernew'
+class PartTranserNew1(models.TransientModel):
+    _name = 'partial.transfernew1'
 #
     expiry_date = fields.Date(string='Expiry Date')
     manf_date = fields.Date(string='Manufacturing Date')
@@ -104,7 +104,7 @@ class PartTranserNew(models.TransientModel):
     medicine_name_packing = fields.Many2one('product.medicine.packing', 'Packing', )
     medicine_1 = fields.Many2one('product.product', string="Medicine")
     qty_received = fields.Float('Qty Transfer')
-    full_id = fields.Many2one('partial.transferr', string='Stock')
+    full_id1 = fields.Many2one('partial.transf', string='Stock')
     qty_transfer = fields.Char('Transfer_Qty')
     entry_stock_id = fields.Many2one('entry.stock')
 
