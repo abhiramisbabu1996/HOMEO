@@ -64,26 +64,32 @@ class AccountInvoice(models.Model):
 class ResPartner(models.Model):
     _inherit = "res.partner"
 
+    # @api.multi
+    @api.depends('gst_no')
+    def _change_boolean_status(self):
+        for rec in self:
+            if rec.gst_no:
+                rec.b2b = True
+                rec.b2c = False
+            else:
+                rec.b2c = True
+                rec.b2b = False
+            # students = self.env['<_name>'].search([('id', '!=', self.id)])
+            # for student in students:
+            #     student.default_selected_student = False
+
     local_customer = fields.Boolean(default=True)
     interstate_customer = fields.Boolean()
     b2b = fields.Boolean(compute="_change_boolean_status")
+    # calc = fields.Float(compute="_change_boolean_status")
+    # b2b = fields.Boolean()
     b2c = fields.Boolean()
     gst_no = fields.Char()
+
     drug_license_number = fields.Char()
     address_new = fields.Text('Address')
     res_person_id = fields.Boolean('Sale Responsible Person ?')
 
-    @api.depends('gst_no')
-    def _change_boolean_status(self):
-        if self.gst_no:
-            self.b2b = True
-            self.b2c = False
-        else:
-            self.b2c = True
-            self.b2b = False
-            # students = self.env['<_name>'].search([('id', '!=', self.id)])
-            # for student in students:
-            #     student.default_selected_student = False
 
 
 
