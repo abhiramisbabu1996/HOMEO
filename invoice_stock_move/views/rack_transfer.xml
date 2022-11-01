@@ -2,7 +2,7 @@
     <data>
 <record model="ir.ui.view" id="new_transfer_rack_id">
             <field name="name">Transfer Stock Positions/Racks</field>
-            <field name="model">rack.transferr</field>
+            <field name="model">rack.transferr2</field>
             <field name="arch" type="xml">
                 <form string="Medicine Stock Entry">
                     <sheet>
@@ -126,7 +126,7 @@
         <record id="action_rack_stock_transfer" model="ir.actions.act_window">
             <field name="name">Rack Transfer</field>
             <field name="type">ir.actions.act_window</field>
-            <field name="res_model">rack.transferr</field>
+            <field name="res_model">rack.transferr2</field>
             <field name="target">new</field>
             <field name="view_type">form</field>
             <field name="view_mode">form</field>

@@ -1,14 +1,14 @@
 from openerp import models, fields, api
 
 
-class RackTransfer(models.TransientModel):
-    _name = 'rack.transferr'
+class RackTransfer1(models.TransientModel):
+    _name = 'rack.transferr2'
 
     racks_id_1 = fields.Many2one('product.medicine.types', string='From')
     racks_id_2 = fields.Many2one('product.medicine.types', string='To')
     stock_full_id = fields.One2many(
-        comodel_name='full.transfernew',
-        inverse_name='full_id',
+        comodel_name='full.transfernew2',
+        inverse_name='full_id2',
         string=' ',
         store=True,
     )
@@ -36,7 +36,7 @@ class RackTransfer(models.TransientModel):
             'context': self.env.context,
             'view_type': 'form',
             'view_mode': 'form',
-            'res_model': 'rack.transferr',
+            'res_model': 'rack.transferr2',
             'res_id': self.id,
             'view_id': False,
             'type': 'ir.actions.act_window',
@@ -57,7 +57,7 @@ class RackTransfer(models.TransientModel):
             'context': self.env.context,
             'view_type': 'form',
             'view_mode': 'form',
-            'res_model': 'rack.transferr',
+            'res_model': 'rack.transferr2',
             'res_id': self.id,
             'view_id': False,
             'type': 'ir.actions.act_window',
@@ -65,8 +65,8 @@ class RackTransfer(models.TransientModel):
         }
 
 
-class FullyTranserNew(models.TransientModel):
-    _name = 'full.transfernew'
+class FullyTranserNew1(models.TransientModel):
+    _name = 'full.transfernew2'
 #
     expiry_date = fields.Date(string='Expiry Date')
     manf_date = fields.Date(string='Manufacturing Date')
@@ -78,7 +78,7 @@ class FullyTranserNew(models.TransientModel):
     medicine_name_packing = fields.Many2one('product.medicine.packing', 'Packing', )
     medicine_1 = fields.Many2one('product.product', string="Medicine")
     qty_received = fields.Float('Qty Transfer')
-    full_id = fields.Many2one('rack.transferr', string='Stock')
+    full_id2 = fields.Many2one('rack.transferr2', string='Stock')
 
 #
 
