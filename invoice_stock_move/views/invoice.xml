@@ -62,22 +62,22 @@
              </xpath>
 
             <xpath expr="//field[@name='invoice_line']/tree/field[@name='product_id']" position="attributes" >
-            <attribute name="string">PRODUCT_NAME</attribute>
+            <attribute name="string">Product</attribute>
              </xpath>
             <xpath expr="//field[@name='invoice_line']/tree/field[@name='price_subtotal']" position="attributes" >
-            <attribute name="string">RATE</attribute>
+            <attribute name="string">Rate</attribute>
              </xpath>
             <xpath expr="//field[@name='invoice_line']/tree/field[@name='avail_qty']" position="attributes" >
-            <attribute name="string">STOCK</attribute>
+            <attribute name="string">Stock</attribute>
              </xpath>
             <xpath expr="//field[@name='invoice_line']/tree/field[@name='quantity']" position="before" >
                 <field name="medicine_grp"/>
             </xpath>
             <xpath expr="//field[@name='invoice_line']/tree/field[@name='quantity']" position="attributes" >
-            <attribute name="string">QTY</attribute>
+            <attribute name="string">Qty</attribute>
              </xpath>
             <xpath expr="//field[@name='invoice_line']/tree/field[@name='price_unit']" position="attributes" >
-            <attribute name="string">MRP</attribute>
+            <attribute name="string">Mrp</attribute>
              </xpath>
             <xpath expr="//field[@name='invoice_line']/tree/field[@name='price_subtotal']" position="before" >
                 <field name="discount2" invisible="1"/>
@@ -120,7 +120,7 @@
 <!--                 <button name="%(action_test_id)d" type="action" string="Test Search" class="oe_edit_only"/>-->
 <!--                 <button name="tree_stock" type="object" string="Search in Stock" class="oe_edit_only"/>original-->
                  <button name="%(wiz_tree)d" type="action" string="Search Stock" class="oe_edit_only"/>
-                 <field name="search_items" class="flexdatalist-json"/>
+                 <field name="search_items" class="flexdatalist-json" invisible="1"/>
              </xpath>
 
 
@@ -173,7 +173,7 @@
 
             </xpath>
             <xpath expr="//field[@name='invoice_line']/tree/field[@name='product_id']" position="attributes" >
-            <attribute name="string">PRODUCT_NAME</attribute>
+            <attribute name="string">Product</attribute>
              </xpath>
 <!--             <xpath expr="//field[@name='invoice_line']/tree/field[@name='price_subtotal']" position="attributes" >-->
 <!--            <attribute name="string">RATE</attribute>-->
@@ -191,10 +191,10 @@
 <!--            <attribute name="readonly">0</attribute>-->
 <!--             </xpath>-->
             <xpath expr="//field[@name='invoice_line']/tree/field[@name='quantity']" position="attributes" >
-            <attribute name="string">QTY</attribute>
+            <attribute name="string">Qty</attribute>
              </xpath>
             <xpath expr="//field[@name='invoice_line']/tree/field[@name='price_unit']" position="attributes" >
-            <attribute name="string">MRP</attribute>
+            <attribute name="string">Mrp</attribute>
              </xpath>
              <xpath expr="//field[@name='invoice_line']/tree/field[@name='price_unit']" position="after">
                  <field name="invoice_line_tax_id3" invisible="1"/>

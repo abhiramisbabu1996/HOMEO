@@ -21,5 +21,5 @@
     font-size: 17px;
 }
 textarea.field_text[name="address_new"] {
-    max-height: 54px;
+    max-height: 40px;
 }

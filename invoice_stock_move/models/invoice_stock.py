@@ -564,9 +564,9 @@ class SupplierInvoiceLineTax(models.Model):
 
     # amount_amount = fields.Float('TAX_AMOUNT', compute="_compute_amount_amount")
     amount_amount = fields.Float('TAX_AMOUNT')
-    amount_amount1 = fields.Float('TAX_AMT', )
+    amount_amount1 = fields.Float('Tax_amt', )
     # amount_w_tax = fields.Float('TOTAL_AMT', compute="_compute_amount_with_tax")
-    amount_w_tax = fields.Float('TOTAL_AMT')
+    amount_w_tax = fields.Float('Total_amt')
 
     # @api.onchange('product_id')
     # def get_pack_details(self):

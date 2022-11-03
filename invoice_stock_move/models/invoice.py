@@ -100,7 +100,7 @@ class AccountInvoiceRefgen(models.Model):
 
 
     discount2 = fields.Float("DISCOUNT2")
-    discount3 = fields.Float("EXTRA_DISCOUNT", )
+    discount3 = fields.Float("Dis2", )
 
 
     @api.model
@@ -376,41 +376,41 @@ class AccountInvoiceLine(models.Model):
 
 
 
-    medicine_rack = fields.Many2one('product.medicine.types', 'RACK')
-    product_of = fields.Many2one('product.medicine.responsible', 'COMPANY')
-    medicine_name_subcat = fields.Many2one('product.medicine.subcat', 'POTENCY', )
-    medicine_name_packing = fields.Many2one('product.medicine.packing', 'PACKING', )
+    medicine_rack = fields.Many2one('product.medicine.types', 'Rack')
+    product_of = fields.Many2one('product.medicine.responsible', 'Company')
+    medicine_name_subcat = fields.Many2one('product.medicine.subcat', 'Potency', )
+    medicine_name_packing = fields.Many2one('product.medicine.packing', 'Pack', )
 
     # medicine_grp = fields.Many2one('product.medicine.group', 'GROUP',compute='_compute_taxes',readonly="0")
-    medicine_grp = fields.Many2one('tax.combo.new', 'GROUP', )
+    medicine_grp = fields.Many2one('tax.combo.new', 'Grp', )
 
     # medicine_group = fields.Char('Group', related="product_id.medicine_group")
     batch = fields.Char("BATCH", related="product_id.batch")
-    batch_2 = fields.Many2one('med.batch', "BATCH", )
+    batch_2 = fields.Many2one('med.batch', "Batch", )
     # test = fields.Float('Test', compute="_get_sup_discount_amt")
     test = fields.Float('Test')
     # test2 = fields.Float('Test2',compute="_get_sup_discount2")
     test2 = fields.Float('Test2')
     test3 = fields.Float('Test3', compute="_compute_all")
-    expiry_date = fields.Date(string='EXP')
-    manf_date = fields.Date(string='MFD')
+    expiry_date = fields.Date(string='Exp')
+    manf_date = fields.Date(string='Mfd')
     alert_date = fields.Date(string='Alert Date')
     avail_qty = fields.Float(string='Stock Total', related="product_id.qty_available")
-    hsn_code = fields.Char('HSN(CODE)')
-    invoice_line_tax_id3 = fields.Many2one('tax.combo', string='GST(%)')
-    invoice_line_tax_id4 = fields.Float(string='TAXES(%)')
-    rack_qty = fields.Float(string="RACK_STOCK")
-    rate_amt = fields.Float(string="RATE")
-    rate_amtc = fields.Float(string="NEW_RATE")
+    hsn_code = fields.Char('Hsn')
+    invoice_line_tax_id3 = fields.Many2one('tax.combo', string='Gst')
+    invoice_line_tax_id4 = fields.Float(string='Tax')
+    rack_qty = fields.Float(string="stock")
+    rate_amt = fields.Float(string="Rate")
+    rate_amtc = fields.Float(string="N-rate")
     dis1 = fields.Float('discount 1')
     dis2 = fields.Float('discount 2')
     grand_total = fields.Float('Grand Total')
     calc = fields.Float('Cal', compute="_compute_mass_discount",)
     calc2 = fields.Float('Cal2',)
     calc3 = fields.Float('Cal3', )
-    new_disc = fields.Float('NEW_DISC', compute="_compute_cus_ex_discount")
-    amt_tax = fields.Float('TAX_AMOUNT')
-    amt_w_tax = fields.Float('TOTAL',compute="_compute_customer_tax")
+    new_disc = fields.Float('Disc2', compute="_compute_cus_ex_discount")
+    amt_tax = fields.Float('Tax_amt')
+    amt_w_tax = fields.Float('Total',compute="_compute_customer_tax")
     doctor_name = fields.Many2one('res.partner','Doctor Name')
     address_new = fields.Text('Address')
 
