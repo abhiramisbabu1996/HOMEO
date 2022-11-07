@@ -35,14 +35,21 @@
 			<field name="res_model">tax.report.wizard</field>
 			<field name="view_type">form</field>
 			<field name="view_mode">form</field>
+			<field name="view_id" ref="form_tax_report" />
 			<field name="target">new</field>
 		</record>
 
-		 <menuitem
-				 name="Tax Report"
-				 parent="invoice_stock_move.menu_reports_1"
-				 id="vehicle_emi_report"
-				 action="action_tax_report"/>
+		<menuitem
+				id="menu_tax_reports"
+				name="Tax Reports"
+				sequence="2"
+				parent="invoice_stock_move.menu_reports_0"/>
+
+		<menuitem
+				id="tax_report_menu_id"
+				name="Tax Report"
+				parent="menu_tax_reports"
+				action="action_tax_report"/>
 
 		<report
 				id="tax_report_id"

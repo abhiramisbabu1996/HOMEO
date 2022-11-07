@@ -18,12 +18,13 @@
     'version': '8.0.1.0.0',
 
     # any module necessary for this one to work correctly
-    'depends': ['sale'],
+    'depends': ['sale','report_xlsx'],
 
     # always loaded
     'data': [
         'views/res_partner_views.xml',
         'report/tax_report_view.xml',
+        'report/tax_report_excel.xml',
     ],
     'images': [
         'static/description/banner.jpg',
