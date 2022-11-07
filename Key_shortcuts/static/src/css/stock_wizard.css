@@ -23,3 +23,7 @@
 textarea.field_text[name="address_new"] {
     max-height: 40px;
 }
+
+text.input[type="text"]{
+max-width: 182px
+}

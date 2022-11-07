@@ -30,6 +30,8 @@
              'report/supplier_inv_report.xml',
              'report/pending_invoice_report.xml',
              'report/sale_report.xml',
+             'report/customer_inv_history.xml',
+             'report/supplier_inv_history.xml',
 
              ],
     'images': ['static/description/banner.jpg'],

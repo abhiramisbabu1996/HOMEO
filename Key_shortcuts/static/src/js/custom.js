@@ -12,8 +12,19 @@ openerp.Key_shortcuts = function (jQuery) {
     newClass = newClass.substring(newClass.indexOf('&action=') + 1).replace('=', '-num');
     $('html').addClass(newClass);
     // For adding tr to supplier table
-    $('.oe_notebook_page.ui-tabs-panel.ui-widget-content .oe_form_field .oe_view_manager_wrapper .oe_view_manager_body .oe_view_manager_view_list table.oe_list_content > tbody:last-child').append('<tr>...</tr><tr>...</tr><tr>...</tr><tr>...</tr><tr>...</tr><tr>...</tr><tr>...</tr><tr>...</tr><tr>...</tr>');
+
     });
+    $("button.oe_button.oe_list_add").on('click', function() {
+        $('.oe_notebook_page.ui-tabs-panel.ui-widget-content .abhi_custom .oe_form_field .oe_view_manager_wrapper .oe_view_manager_body .oe_view_manager_view_list table.oe_list_content > tbody:last-child').append('<tr>...</tr><tr>...</tr><tr>...</tr><tr>...</tr><tr>...</tr><tr>...</tr><tr>...</tr><tr>...</tr><tr>...</tr>');
+    });
+
+//    $( "oe_button oe_form_button_create" ).click(function() {
+    $("button.oe_button.oe_form_button_create").on('click', function() {
+//    alert( "Handler for .click() called." );
+      $('.oe_notebook_page.ui-tabs-panel.ui-widget-content .abhi_custom .oe_form_field .oe_view_manager_wrapper .oe_view_manager_body .oe_view_manager_view_list table.oe_list_content > tbody:last-child').append('<tr>...</tr><tr>...</tr><tr>...</tr><tr>...</tr><tr>...</tr><tr>...</tr><tr>...</tr><tr>...</tr><tr>...</tr>');
+
+    });
+
 //END
 
 };

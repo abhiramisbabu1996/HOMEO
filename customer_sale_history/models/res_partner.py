@@ -12,6 +12,9 @@ class AccountInvoice(models.Model):
     doctor_name = fields.Many2one('res.partner','Doctor Name')
     res_person = fields.Many2one('res.partner',string="Responsible Person")
     address_new = fields.Text('Address',related="partner_id.address_new")
+    financial_year = fields.Many2one('account.fiscalyear','Financial Year')
+    inv_sup_no = fields.Char('Invoice No')
+    inv_amount = fields.Float('Invoice Amount')
 
     # @api.onchange('partner_id')
     # def onchange_address_id(self):
