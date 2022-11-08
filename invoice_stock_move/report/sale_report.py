@@ -60,7 +60,6 @@ class SaleReport(models.TransientModel):
             for rec in cust_invs:
                 if rec.state == 'draft':
                     pass
-                    print("ERICA...")
                 else:
                     for lines in rec.invoice_line:
                         if self.product.id and self.company.id and self.group.id and self.packing.id:
