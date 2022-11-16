@@ -5,11 +5,9 @@
 			<field name="model">customer.invoice.historytree</field>
 			<field name="arch" type="xml">
 				<form string="Customer Invoice History">
-
 					<group col="2">
-
 						<group>
-<field name="partner_id" domain="[('customer','=',True)]" />
+							<field name="partner_id" domain="[('customer','=',True)]" />
 							<field name="financial_year"/>
 							<field name="invoices_id"/>
 						</group>

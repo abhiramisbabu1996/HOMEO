@@ -252,9 +252,10 @@ class InvoiceStockMove(models.Model):
     #             tax_total = tax_total + lines.amount_amount1
     #     result.amount_tax = tax_total
     #     result.amount_total = result.amount_total + tax_total
-        if result.type != 'in_invoice':
-            if result.b2c:
-                result.state = 'paid'
+        if not result.holding_invoice or not result.packing_slip:
+            if result.type != 'in_invoice':
+                if result.b2c:
+                    result.state = 'paid'
         return result
 
     # @api.multi

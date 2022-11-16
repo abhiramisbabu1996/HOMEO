@@ -33,6 +33,7 @@
              'report/customer_inv_history.xml',
              'report/supplier_inv_history.xml',
              'report/purchase_report.xml',
+             'report/packing_holding_history.xml',
 
              ],
     'images': ['static/description/banner.jpg'],
