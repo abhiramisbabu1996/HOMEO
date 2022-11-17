@@ -4,7 +4,7 @@ from datetime import timedelta
 # import models
 from dateutil.relativedelta import relativedelta
 
-from openerp import models, fields, api, tools
+from openerp import models, fields, api, tools, _
 
 
 class AccountAccountInherit(models.Model):
@@ -540,33 +540,56 @@ class InvoiceStockMove(models.Model):
 
     @api.model
     def create(self, vals):
-        # self.button_reset_taxes()
+        if vals.get('partner_id'):
+            partner_id = self.env['res.partner'].browse(vals.get('partner_id'))
+            if partner_id.customer == True:
+                if vals.get('pay_mode') == 'credit':
+                    credit_amount = partner_id.limit_amt
+                    used = partner_id.used_credit_amt
+                    bal = credit_amount - used
+                    if bal < vals.get('amount_total'):
+                        print("Credit Amount is over")
+                        raise Warning(_('This Customers Credit Limit Amount Rs. '+str(credit_amount)+'  has been Crossed.'+"\n" 'Check  '+result.partner_id.name+'s'+ ' Credit Limits'))
+
         if 'duplicate' in self._context:
             if self._context['duplicate']:
                 vals.update({'number2': self.browse(self._context['inv_id']).number2, 'duplicate': True})
+        elif vals.get('packing_slip'):
+            vals['number2'] = self.env['ir.sequence'].next_by_code('packing.slip.invoice')
+        elif vals.get('holding_invoice'):
+            vals['number2'] = self.env['ir.sequence'].next_by_code('holding.invoice')
+        elif vals.get('type') == 'in_invoice':
+            vals['number2'] = self.env['ir.sequence'].next_by_code('supplier.account.invoice')
+        else:
+            if vals.get('type') == 'out_invoice':
+                vals['number2'] = self.env['ir.sequence'].next_by_code('customer.account.invoice')
         result = super(InvoiceStockMove, self).create(vals)
+        if result.type == 'in_invoice' and not result.number2:
+            result.number2 = self.env['ir.sequence'].next_by_code('supplier.account.invoice')
+        if result.type == 'out_invoice' and not result.number2:
+            result.number2 = self.env['ir.sequence'].next_by_code('customer.account.invoice')
         return result
 
     @api.multi
     def write(self, vals):
-        if 'internal_number' in vals:
-            if self.duplicate:
-                vals['internal_number'] = self.number2
-                vals['number2'] = self.number2
-            else:
-                latest_ids = self.search([('duplicate', '=', False)], limit=2, order='id desc').ids
-                latest = self.search([('id', 'in', latest_ids)], limit=1, order='id asc')
-                if latest.number2:
-                    last_index = int(latest.number2.split('/')[2]) + 1
-                    if len(str(last_index)) < 4:
-                        last_index = (4 - len(str(last_index))) * '0' + str(last_index)
-                    index = latest.number2.split('/')
-                    vals['number2'] = index[0] + "/" + index[1] + "/" + str(last_index)
-                    vals['seq'] = int(latest.seq) + 1
-                else:
-                    vals['seq'] = 1
-                    vals['number2'] = "SAJ/2022/0001"
-                vals['internal_number'] = vals['number2']
+        # if 'internal_number' in vals:
+            # if self.duplicate:
+            #     vals['internal_number'] = self.number2
+            #     vals['number2'] = self.number2
+            # else:
+            #     latest_ids = self.search([('duplicate', '=', False)], limit=2, order='id desc').ids
+            #     latest = self.search([('id', 'in', latest_ids)], limit=1, order='id asc')
+            #     if latest.number2:
+            #         last_index = int(latest.number2.split('/')[2]) + 1
+            #         if len(str(last_index)) < 4:
+            #             last_index = (4 - len(str(last_index))) * '0' + str(last_index)
+            #         index = latest.number2.split('/')
+            #         vals['number2'] = index[0] + "/" + index[1] + "/" + str(last_index)
+            #         vals['seq'] = int(latest.seq) + 1
+            #     else:
+            #         vals['seq'] = 1
+            #         vals['number2'] = "SAJ/2022/0001"
+            #     vals['internal_number'] = vals['number2']
         result = super(InvoiceStockMove, self).write(vals)
         # add custom codes here
         return result
