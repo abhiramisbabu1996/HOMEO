@@ -16,7 +16,7 @@
             <field name="model">entry.stock</field>
             <field name="arch" type="xml">
                 <tree string="Stock Entry" editable="bottom">
-                    <button name="call_function" string="Add" type="object" help="calls python function" />
+                    <button name="call_function" string="Add" type="object" class="css_wizard_button oe_highlight" help="calls python function"/>
 
                     <field name="s_no" invisible="1"/>
                     <field name="medicine_1"/>

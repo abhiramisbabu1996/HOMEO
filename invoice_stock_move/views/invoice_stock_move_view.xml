@@ -27,9 +27,9 @@
                 </div>
             </xpath>
 
-            <xpath expr="//button[@string='Print']" position="attributes">
-                <attribute name="attrs">{'invisible':['|',('sent','=',True), ('state', 'not in', ['open','paid'])]}</attribute>
-            </xpath>
+<!--            <xpath expr="//button[@string='Print']" position="attributes">-->
+<!--                <attribute name="attrs">{'invisible':['|',('sent','=',True), ('state', 'not in', ['open','paid'])]}</attribute>-->
+<!--            </xpath>-->
 
             <xpath expr="//field[@name='price_subtotal']" position="after">
                     <field name="rate_amtc"/>

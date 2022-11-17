@@ -36,6 +36,9 @@
              'report/packing_holding_history.xml',
 
              ],
+    'qweb': [
+        "static/src/css/template.xml",
+    ],
     'images': ['static/description/banner.jpg'],
     'license': 'LGPL-3',
     'installable': True,

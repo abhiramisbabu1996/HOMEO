@@ -119,9 +119,13 @@
 <!--                 <button name="action_product_search_id" type="object" string="Product Search" class="oe_edit_only"/>-->
 <!--                 <button name="%(action_test_id)d" type="action" string="Test Search" class="oe_edit_only"/>-->
 <!--                 <button name="tree_stock" type="object" string="Search in Stock" class="oe_edit_only"/>original-->
-                 <button name="%(wiz_tree)d" type="action" string="Search Stock" class="oe_edit_only"/>
+                 <button name="%(wiz_tree)d" type="action" string="Search Stock" class="css_hiworth"/>
                  <field name="search_items" class="flexdatalist-json" invisible="1"/>
              </xpath>
+             <xpath expr="//button[@name='invoice_print']" position="replace">
+                    <button name="invoice_print" string="Print Invoice(F10)" type="object" attrs="{'invisible':['|',('sent','=',False)]}" class="css_print"/>
+             </xpath>
+
 
 
 
