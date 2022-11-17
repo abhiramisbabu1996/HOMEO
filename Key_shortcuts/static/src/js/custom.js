@@ -26,7 +26,7 @@ $.shortcut('113', function() {
 //var new_url = window.location.protocol + '//' + window.location.host + '/' + 'web?debug=1#view_type=form&model=account.invoice&menu_id=441&action=395'
 //     window.location.assign(window.location.protocol + '//' + window.location.host + '/' + 'web?debug=1#view_type=form&model=account.invoice&menu_id=441&action=395')
 
- window.location.assign("http://localhost:8069/web?debug=1#id=295&view_type=form&model=account.invoice&action=395")
+ window.location.assign(window.location.protocol + '//' + window.location.host + '/' + 'web?debug=1#view_type=form&model=account.invoice&menu_id=441&action=395')
 $('.oe_form_button_create').each(function() {
     if($(this).parents('div:hidden').length == 0){
         $(this).trigger('click');
