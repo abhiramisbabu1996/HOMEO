@@ -80,7 +80,7 @@ class TaxReport(ReportXlsx):
         # worksheet.merge_range('A1:B1', "Attendance Report", boldc)
 
         inv = lines
-        worksheet.merge_range('A1:E1', "TRAVANCORE HOMEO MEDICALS, GSTIN :32AYAPS1856Q1ZY", heading_format)
+        worksheet.merge_range('A1:E1', "TRAVANCORE HOMEO_1 MEDICALS, GSTIN :32AYAPS1856Q1ZY", heading_format)
         worksheet.merge_range('A2:B2', "GST BTOB HSN Report by BIll " + datetime.strftime(datetime.strptime(inv[0].from_date, "%Y-%m-%d"), "%d-%m-%Y") + " to " + datetime.strftime(datetime.strptime(inv[0].to_date, "%Y-%m-%d"), "%d-%m-%Y"),boldc)
 
         # worksheet.merge_range('A2:Q2', month, boldc)

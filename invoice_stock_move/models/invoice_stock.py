@@ -242,20 +242,21 @@ class InvoiceStockMove(models.Model):
 
 
     # TAX UPDATION IN SAVE BUTTON
-    @api.model
-    def create(self, vals):
+    # @api.model
+    # def create(self, vals):
     #     # print("abcdefghijklmnopqrstuvwxyzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz")
-        result = super(InvoiceStockMove, self).create(vals)
+    #     result = super(InvoiceStockMove, self).create(vals)
     #     tax_total = 0
     #     for lines in result.invoice_line:
     #         if lines.amount_amount1:
     #             tax_total = tax_total + lines.amount_amount1
     #     result.amount_tax = tax_total
     #     result.amount_total = result.amount_total + tax_total
-        if result.type != 'in_invoice':
-            if result.b2c:
-                result.state = 'paid'
-        return result
+    #     if not result.holding_invoice or not result.packing_slip:
+    #         if result.type != 'in_invoice':
+                # if result.b2c:
+                #     result.state = 'paid'
+        # return result
 
     # @api.multi
     # def write(self, vals):

@@ -13,7 +13,7 @@
                         </group>
                         <group>
                             <field name="by_hsn" string="BY HSN CODE"/>
-<!--                            <field name="b2c" string="B2C"/>-->
+                            <field name="b2c" string="B2C"/>
                         </group>
                     </group>
                     <footer>
@@ -46,7 +46,8 @@
                 report_type="xlsx"
                 name="customer_sale_history.report_tax_excel.xlsx"
                 file="customer_sale_history.report_tax_excel.xlsx"
-                attachment_use="False"/>
+                attachment_use="False"
+        />
 
         <report
 				id="b2b_tax_report_id"
@@ -68,8 +69,10 @@
 									<td style='font-size:15px'><b>Sl No</b></td>
 									<td style='font-size:15px'><b>Bill Date</b></td>
 									<td style='font-size:15px'><b>Bill No</b></td>
-									<td style='font-size:15px'><b>Customer</b></td>
-									<td style='font-size:15px'><b>GST NO</b></td>
+									<t t-if="not o.b2c">
+										<td style='font-size:15px'><b>Customer</b></td>
+										<td style='font-size:15px'><b>GST NO</b></td>
+									</t>
 									<td style='font-size:15px'><b>Sales5%</b></td>
 									<td style='font-size:15px'><b>CGST</b></td>
 									<td style='font-size:15px'><b>SGST</b></td>
@@ -79,6 +82,9 @@
 									<td style='font-size:15px'><b>Sales18%</b></td>
 									<td style='font-size:15px'><b>CGST</b></td>
 									<td style='font-size:15px'><b>SGST</b></td>
+									<t t-if="o.b2c">
+										<td style='font-size:15px'><b>Total</b></td>
+									</t>
 								</tr>
 								<t t-set="sl_no" t-value="1"/>
 								<t t-set="tax_total_5" t-value="0"/>
@@ -90,6 +96,7 @@
 								<t t-set="total_amount_sgst_12" t-value="0"/>
 								<t t-set="total_amount_cgst_18" t-value="0"/>
 								<t t-set="total_amount_sgst_18" t-value="0"/>
+								<t t-set="total_amount_wo_tax" t-value="0"/>
 
 								<t t-foreach="o.get_b2b_tax_invoices()" t-as="line">
 								<tr>
@@ -97,8 +104,10 @@
 									<t t-set="sl_no" t-value="sl_no+1" />
 									<td style='font-size:15px'><span t-esc="line['invoice'].date_invoice"/></td>
 									<td style='font-size:15px'><span t-esc="line['invoice'].number2"/></td>
-									<td style='font-size:15px'><span t-esc="line['invoice'].partner_id.name"/></td>
-									<td style='font-size:15px'><span t-esc="line['invoice'].partner_id.gst_no"/></td>
+									<t t-if="not o.b2c">
+										<td style='font-size:15px'><span t-esc="line['invoice'].partner_id.name"/></td>
+										<td style='font-size:15px'><span t-esc="line['invoice'].partner_id.gst_no"/></td>
+									</t>
 									<td style='font-size:15px'><span t-esc="line['tax_5_sum']"/></td>
 									<t t-set="tax_total_5" t-value="tax_total_5+line['tax_5_sum']"/>
 									<td style='font-size:15px'><span t-esc="line['total_amount_cgst_5']"/></td>
@@ -117,15 +126,20 @@
 									<t t-set="total_amount_cgst_18" t-value="total_amount_cgst_18+line['total_amount_cgst_18']"/>
 									<td style='font-size:15px'><span t-esc="line['total_amount_sgst_18']"/></td>
 									<t t-set="total_amount_sgst_18" t-value="total_amount_sgst_18+line['total_amount_sgst_18']"/>
+									<t t-if="o.b2c">
+										<td style='font-size:15px'><span t-esc="line['invoice'].amount_total - line['invoice'].amount_tax"/></td>
+										<t t-set="total_amount_wo_tax" t-value="total_amount_wo_tax+line['invoice'].amount_total - line['invoice'].amount_tax"/>
+									</t>
 								</tr>
 								</t>
 								<tr>
 									<td style='font-size:15px'><b>Total</b></td>
 									<td/>
 									<td/>
-									<td/>
-									<td/>
-									<td/>
+									<t t-if="not o.b2c">
+										<td/>
+										<td/>
+									</t>
 									<td style='font-size:15px'><span t-esc="tax_total_5"/></td>
 									<td style='font-size:15px'><span t-esc="total_amount_cgst_5"/></td>
 									<td style='font-size:15px'><span t-esc="total_amount_sgst_5"/></td>
@@ -135,6 +149,9 @@
 									<td style='font-size:15px'><span t-esc="tax_total_18"/></td>
 									<td style='font-size:15px'><span t-esc="total_amount_cgst_18"/></td>
 									<td style='font-size:15px'><span t-esc="total_amount_sgst_18"/></td>
+									<t t-if="o.b2c">
+										<td style='font-size:15px'><span t-esc="total_amount_wo_tax"/></td>
+									</t>
 								</tr>
 							</table>
 						</div>

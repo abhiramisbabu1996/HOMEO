@@ -111,7 +111,15 @@ class TaxReportWizard(models.TransientModel):
 
     @api.multi
     def get_b2b_tax_invoices(self):
-        invoices = self.env['account.invoice'].search([("date_invoice", ">=", self.from_date), ("date_invoice", "<=", self.to_date), ('partner_id.customer', '=', True), ('b2b', '=', True)])
+        if self.b2c:
+            invoices = self.env['account.invoice'].search(
+                [("date_invoice", ">=", self.from_date), ("date_invoice", "<=", self.to_date),
+                 ('partner_id.customer', '=', True), ('b2c', '=', True)])
+        else:
+            invoices = self.env['account.invoice'].search(
+                [("date_invoice", ">=", self.from_date), ("date_invoice", "<=", self.to_date),
+                 ('partner_id.customer', '=', True), ('b2c', '=', False)])
+
         data_list = []
         for invoice in invoices:
             tax_5 = invoice.invoice_line.filtered(lambda l: l.invoice_line_tax_id4 == 5)

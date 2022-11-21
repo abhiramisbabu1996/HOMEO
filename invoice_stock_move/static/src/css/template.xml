@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<openerp>
+    <data>
+        <template id="assets_backend" name="invoice_stock_move assets" inherit_id="web.assets_backend">
+
+	<xpath expr="." position="inside">
+
+		<link rel="stylesheet" href="invoice_stock_move/static/src/css/custom.css"/>
+
+        </xpath>
+
+</template>
+    </data>
+</openerp>

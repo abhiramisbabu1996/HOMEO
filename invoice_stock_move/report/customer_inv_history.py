@@ -42,6 +42,64 @@ class CustomerInvoiceHistoryTree(models.TransientModel):
 
 
         }
+    @api.multi
+    def action_packing_slip_window(self):
+        domain = [('packing_slip','=',True)]
+        if self.invoices_id:
+            domain += [('number', '=', self.invoices_id.id)]
+            res = self.env['account.invoice'].search(domain)
+        else:
+            if self.partner_id:
+                domain +=[('partner_id', '=', self.partner_id.id)]
+            if self.financial_year:
+                domain +=[('financial_year', '=', self.financial_year.id)]
+            if self.date_from:
+                domain +=[('date_invoice', '>=', self.date_from)]
+            if self.date_to:
+                domain +=[('date_invoice', '<=', self.date_to)]
+            res = self.env['account.invoice'].search(domain)
+        print(res)
+        return{
+            'name':_('Packing Slips'),
+            'view_type':'tree',
+            'view_id': False,
+            'view_mode':'tree',
+            'res_model':'account.invoice',
+            'domain':[('id', 'in', res.ids)],
+            'type': 'ir.actions.act_window',
+            'target': 'current',
+
+
+        }
+    @api.multi
+    def action_holding_invoice_window(self):
+        domain = [('holding_invoice','=',True)]
+        if self.invoices_id:
+            domain += [('number', '=', self.invoices_id.id)]
+            res = self.env['account.invoice'].search(domain)
+        else:
+            if self.partner_id:
+                domain +=[('partner_id', '=', self.partner_id.id)]
+            if self.financial_year:
+                domain +=[('financial_year', '=', self.financial_year.id)]
+            if self.date_from:
+                domain +=[('date_invoice', '>=', self.date_from)]
+            if self.date_to:
+                domain +=[('date_invoice', '<=', self.date_to)]
+            res = self.env['account.invoice'].search(domain)
+        print(res)
+        return{
+            'name':_('Holding Invoices'),
+            'view_type':'tree',
+            'view_id': False,
+            'view_mode':'tree',
+            'res_model':'account.invoice',
+            'domain':[('id', 'in', res.ids)],
+            'type': 'ir.actions.act_window',
+            'target': 'current',
+
+
+        }
 
 
 

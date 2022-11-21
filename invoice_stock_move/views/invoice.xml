@@ -1,5 +1,61 @@
 <openerp>
     <data>
+        <record id="sequence_type_invoice_type_id" model="ir.sequence.type">
+            <field name="name">Customer Invoice Sequence Type</field>
+            <field name="code">customer.account.invoice</field>
+        </record>
+        <record id="sequence_customer_invoice_id" model="ir.sequence">
+            <field name="name">Customer Invoice</field>
+            <field name="code">customer.account.invoice</field>
+            <field name="active">TRUE</field>
+            <field name="prefix">%(year)s/</field>
+            <field name="padding">4</field>
+            <field name="number_next">1</field>
+            <field name="number_increment">1</field>
+        </record>
+
+        <record id="sequence_type_supplier_invoice_type_id" model="ir.sequence.type">
+            <field name="name">Supplier Invoice Sequence Type</field>
+            <field name="code">supplier.account.invoice</field>
+        </record>
+        <record id="sequence_supplier_invoice_id" model="ir.sequence">
+            <field name="name">Supplier Invoice</field>
+            <field name="code">supplier.account.invoice</field>
+            <field name="active">TRUE</field>
+            <field name="prefix">%(year)s/</field>
+            <field name="padding">4</field>
+            <field name="number_next">1</field>
+            <field name="number_increment">1</field>
+        </record>
+
+        <record id="sequence_type_packing_slip_type_id" model="ir.sequence.type">
+            <field name="name">Packing Slip Invoice Sequence Type</field>
+            <field name="code">packing.slip.invoice</field>
+        </record>
+        <record id="sequence_packing_invoice_id" model="ir.sequence">
+            <field name="name">Packing Slip</field>
+            <field name="code">packing.slip.invoice</field>
+            <field name="active">TRUE</field>
+            <field name="prefix">%(year)s/</field>
+            <field name="padding">4</field>
+            <field name="number_next">1</field>
+            <field name="number_increment">1</field>
+        </record>
+
+        <record id="sequence_type_holding_invoice_type_id" model="ir.sequence.type">
+            <field name="name">Holding Invoice Sequence Type</field>
+            <field name="code">holding.invoice</field>
+        </record>
+        <record id="sequence_holding_invoice_id" model="ir.sequence">
+            <field name="name">Holding Invoice</field>
+            <field name="code">holding.invoice</field>
+            <field name="active">TRUE</field>
+            <field name="prefix">%(year)s/</field>
+            <field name="padding">4</field>
+            <field name="number_next">1</field>
+            <field name="number_increment">1</field>
+        </record>
+
         <record model="ir.actions.act_window" id="wiz_tree">
             <field name="name">Search Tree</field>
             <field name="res_model">entry.stock</field>
@@ -119,9 +175,13 @@
 <!--                 <button name="action_product_search_id" type="object" string="Product Search" class="oe_edit_only"/>-->
 <!--                 <button name="%(action_test_id)d" type="action" string="Test Search" class="oe_edit_only"/>-->
 <!--                 <button name="tree_stock" type="object" string="Search in Stock" class="oe_edit_only"/>original-->
-                 <button name="%(wiz_tree)d" type="action" string="Search Stock" class="oe_edit_only"/>
+                 <button name="%(wiz_tree)d" type="action" string="Search Stock" class="css_hiworth"/>
                  <field name="search_items" class="flexdatalist-json" invisible="1"/>
              </xpath>
+             <xpath expr="//button[@name='invoice_print']" position="replace">
+                    <button name="invoice_print" string="Print Invoice(F10)" type="object" attrs="{'invisible':[('type','=','in_invoice')]}" class="css_print"/>
+             </xpath>
+
 
 
 
