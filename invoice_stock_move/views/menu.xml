@@ -16,7 +16,7 @@
             <field name="model">entry.stock</field>
             <field name="arch" type="xml">
                 <tree string="Stock Entry" editable="bottom">
-                    <button name="call_function" string="Add" type="object" class="css_wizard_button oe_highlight" help="calls python function"/>
+<!--                    <button name="call_function" string="Add" type="object" class="css_wizard_button oe_highlight" help="calls python function"/>-->
 
                     <field name="s_no" invisible="1"/>
                     <field name="medicine_1"/>
@@ -37,6 +37,42 @@
                     <field name="qty_received"/>
                     <field name="discount" invisible="1"/>
                 </tree>
+            </field>
+        </record>
+
+<!--        HTML TREE VIEW FOR ENTRY.STOCK-->
+
+
+
+
+        <record model="ir.ui.view" id="new_stock_entry_tree_id_2">
+            <field name="name">Medicine Stocks Entry List2</field>
+            <field name="model">entry.stock</field>
+            <field name="arch" type="xml">
+<!--                <div id="my_div" class="my_tclass_div">-->
+
+                <tree string="Stock Entry" editable="bottom" id="stock_wizard_id" class="tree_class" name="tree_name">
+                    <button name="call_function" string="Add" type="object" class="css_wizard_button oe_highlight" help="calls python function"/>
+                    <field name="s_no" invisible="1"/>
+                    <field name="medicine_1"/>
+                    <field name="potency"/>
+                    <field name="medicine_name_packing"/>
+                    <field name="company"/>
+                    <field name="medicine_grp" invisible="1"/>
+                    <field name="medicine_grp1"/>
+                    <field name="qty" type="char"/>
+                    <field name="mrp" type="char"/>
+                    <field name="batch_2"/>
+                    <field name="manf_date"/>
+                    <field name="expiry_date"/>
+                    <field name="custom_qty" type="char"/>
+                    <field name="rack"/>
+                    <field name="hsn_code"/>
+                    <field name="invoice_line_tax_id4"/>
+                    <field name="qty_received"/>
+                    <field name="discount" invisible="1"/>
+                </tree>
+<!--                </div>-->
             </field>
         </record>
 

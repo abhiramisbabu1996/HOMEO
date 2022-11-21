@@ -1,6 +1,6 @@
 $(document).on("shown.bs.modal", function () {
 setTimeout(function(){
-$('.oe_list_content').DataTable(
+$('.tree_class table').DataTable(
 
 );
   $('input[type="search"]').focus();

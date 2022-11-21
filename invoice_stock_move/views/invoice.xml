@@ -57,10 +57,11 @@
         </record>
 
         <record model="ir.actions.act_window" id="wiz_tree">
-            <field name="name">Search Tree</field>
+            <field name="name">Search Stock In Tree</field>
             <field name="res_model">entry.stock</field>
             <field name="view_type">form</field>
             <field name="view_mode">tree</field>
+            <field name="view_id" ref="new_stock_entry_tree_id_2"/>
             <field name="target">new</field>
         </record>
         <record model="ir.actions.act_window" id="action_test_id">
