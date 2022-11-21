@@ -30,7 +30,7 @@ class CreditLimitCustomerInv(models.Model):
             if self.partner_id.customer == True:
                 print("inside credits onchange")
 
-<<<<<<< HEAD
+
     @api.model
     def create(self, vals,):
         result = super(CreditLimitCustomerInv, self).create(vals)
@@ -45,7 +45,7 @@ class CreditLimitCustomerInv(models.Model):
         result = super(CreditLimitCustomerInv, self).create(vals)
 
         return result
-=======
+
     # @api.model
     # def create(self, vals,):
     #     result = super(CreditLimitCustomerInv, self).create(vals)
@@ -60,7 +60,7 @@ class CreditLimitCustomerInv(models.Model):
     #
     #
     #     return result
->>>>>>> 76ee49d2dd768714b2cbff2fac5d18fe4674ed4f
+
 
 
 class CreditLimitCustomer(models.Model):

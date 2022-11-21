@@ -33,11 +33,11 @@
              'report/customer_inv_history.xml',
              'report/supplier_inv_history.xml',
              'report/purchase_report.xml',
-<<<<<<< HEAD
+
              'report/inherit_supplier_invoice_report.xml',
-=======
+
              'report/packing_holding_history.xml',
->>>>>>> 76ee49d2dd768714b2cbff2fac5d18fe4674ed4f
+
 
              ],
     'qweb': [
