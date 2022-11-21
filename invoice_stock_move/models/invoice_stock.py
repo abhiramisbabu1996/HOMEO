@@ -78,6 +78,7 @@ class NewStockEntry(models.Model):
     qty_received = fields.Float('Qty Trasfer')
     amount_w_tax = fields.Float()
     custom_qty = fields.Integer()
+    invoice_line_id = fields.Many2one('account.invoice.line')
 
     @api.model
     def create(self, vals):

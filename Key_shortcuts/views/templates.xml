@@ -8,6 +8,7 @@
             <xpath expr="." position="inside">
                  <link rel="stylesheet" href="/Key_shortcuts/static/src/css/datatable.css"/>
                 <link rel="stylesheet" href="/Key_shortcuts/static/src/css/stock_wizard.css"/>
+                <link rel="stylesheet" href="/Key_shortcuts/static/src/css/web_menu.css"/>
                       <script type="text/javascript" src="/Key_shortcuts/static/src/js/stock_wizard.js"></script>
                 <script type="text/javascript" src="/Key_shortcuts/static/src/js/datatable.js"></script>
 

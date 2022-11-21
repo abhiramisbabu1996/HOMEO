@@ -6,16 +6,29 @@
         <field name="model">account.invoice</field>
         <field name="inherit_id" ref="account.invoice_form"/>
         <field name="arch" type="xml">
-            <xpath expr="//header" position="inside">
-                <button name="action_stock_transfer" string="Transfer" type="object"  class="oe_highlight"
-                      attrs="{'invisible':['|',('state', '=', 'draft'),('picking_count', '=', 1)]}"/>
+<!--            <xpath expr="//header" position="inside">-->
+<!--                <button name="action_stock_transfer" string="Transfer" type="object"  class="oe_highlight"-->
+<!--                      attrs="{'invisible':['|',('state', '=', 'draft'),('picking_count', '=', 1)]}"/>-->
 <!--                <button name="create" string="Dulicate Invoice" type="object"  class="oe_highlight"-->
 <!--                      attrs="{'invisible':['|',('state', '=', 'draft'),('picking_count', '=', 1)]}"/>-->
-            </xpath>
+<!--            </xpath>-->
             <xpath expr="//field[@name='date_due']" position="after">
                 <field name="picking_transfer_id"/>
                 <field name="invoice_picking_id" invisible="1"/>
+                <field name="packing_slip" invisible="1"/>
+                <field name="holding_invoice" invisible="1"/>
             </xpath>
+
+                <xpath expr="//button[@name='invoice_cancel']" position="after">
+                    <button name="move_to_picking_slip" string="Import to Packing Slip" type="object"  class="oe_highlight" states="draft"/>
+                    <button name="move_to_holding_invoice" string="Import to Holding Invoice" type="object"  class="oe_highlight" states="draft"/>
+                    <button name="import_to_invoice" string="Import to Invoice" type="object"  class="oe_highlight" attrs="{'invisible':[('packing_slip', '=', False),('holding_invoice', '=', False)]}"/>
+                </xpath>
+
+            <xpath expr="//field[@name='state']" position="attributes">
+                <attribute name="attrs">{'invisible':['|',('packing_slip', '=', True),('holding_invoice', '=', True)]}</attribute>
+            </xpath>
+
             <xpath expr="//header" position="inside">
                 <div class="oe_button_box" name="button_box">
                     <button type="object"
@@ -105,6 +118,9 @@
                  <xpath expr="//page[@string='Payments']" position="attributes">
                     <attribute name="invisible">1</attribute>
                 </xpath>
+                <xpath expr="//field[@name='number']" position="replace" >
+                   <field name="number2" readonly="1"/>
+                </xpath>
             </field>
 
          </record>
@@ -114,10 +130,10 @@
             <field name="model">account.invoice</field>
             <field name="inherit_id" ref="account.invoice_supplier_form"/>
             <field name="arch" type="xml">
-                <xpath expr="//header" position="inside">
-                    <button name="action_stock_receive" string="Receive"  class="oe_highlight"
-                            type="object"   attrs="{'invisible':['|',('state', '=', 'draft'),('picking_count', '=', 1)]}"/>
-                </xpath>
+<!--                <xpath expr="//header" position="inside">-->
+<!--                    <button name="action_stock_receive" string="Receive"  class="oe_highlight"-->
+<!--                            type="object"   attrs="{'invisible':['|',('state', '=', 'draft'),('picking_count', '=', 1)]}"/>-->
+<!--                </xpath>-->
                 <xpath expr="//field[@name='date_due']" position="after">
                     <field name="picking_type_id"/>
                     <field name="invoice_picking_id" invisible="1"/>

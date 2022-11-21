@@ -10,7 +10,6 @@
             <field name="active">TRUE</field>
             <field name="prefix">%(year)s/</field>
             <field name="padding">4</field>
-            <field name="number_next">1</field>
             <field name="number_increment">1</field>
         </record>
 
@@ -24,7 +23,6 @@
             <field name="active">TRUE</field>
             <field name="prefix">%(year)s/</field>
             <field name="padding">4</field>
-            <field name="number_next">1</field>
             <field name="number_increment">1</field>
         </record>
 
@@ -38,7 +36,6 @@
             <field name="active">TRUE</field>
             <field name="prefix">%(year)s/</field>
             <field name="padding">4</field>
-            <field name="number_next">1</field>
             <field name="number_increment">1</field>
         </record>
 
@@ -52,7 +49,7 @@
             <field name="active">TRUE</field>
             <field name="prefix">%(year)s/</field>
             <field name="padding">4</field>
-            <field name="number_next">1</field>
+<!--            <field name="number_next">1</field>-->
             <field name="number_increment">1</field>
         </record>
 
@@ -164,9 +161,9 @@
             <xpath expr="//field[@name='invoice_line']/tree/field[@name='account_id']" position="attributes" >
                 <attribute name="invisible">1</attribute>
             </xpath>
-            <xpath expr="//field[@name='number']" position="replace" >
-               <field name="number2" readonly="1"/>
-            </xpath>
+            <xpath expr="//field[@name='number']" position="replace">
+                <field name="number2" class="oe_inline" readonly="1"/>
+          </xpath>
 <!--            <xpath expr="//field[@name='invoice_line']/tree/field[@name='price_subtotal']" position="after">-->
 <!--                 <field name="test3"/>-->
 <!--             </xpath>-->
@@ -180,7 +177,7 @@
                  <field name="search_items" class="flexdatalist-json" invisible="1"/>
              </xpath>
              <xpath expr="//button[@name='invoice_print']" position="replace">
-                    <button name="invoice_print" string="Print Invoice(F10)" type="object" attrs="{'invisible':[('type','=','in_invoice')]}" class="css_print"/>
+                    <button name="invoice_print" string="Print Invoice(F10)" type="object" attrs="{'invisible':[('type','=','in_invoice'),('state', 'in', ['packing_slip','holding_invoice','draft'])]}" class="css_print"/>
              </xpath>
 
 

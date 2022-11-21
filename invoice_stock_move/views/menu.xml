@@ -328,7 +328,8 @@
             <field name="view_type">form</field>
             <field name="view_mode">tree,form,calendar,graph</field>
             <field eval="False" name="view_id"/>
-            <field name="domain">[('type','=','out_invoice')]</field>
+            <field name="domain">[('type','=','out_invoice'),('holding_invoice','=',False),('packing_slip','=',False)]]
+            </field>
             <field name="context">{'default_type':'out_invoice', 'type':'out_invoice', 'journal_type': 'sale'}</field>
             <field name="search_view_id" ref="account.view_account_invoice_filter"/>
             <field name="help" type="html">
@@ -564,14 +565,15 @@
             <field name="name">Cheque Transactions</field>
             <field name="model">cheque.entry</field>
             <field name="arch" type="xml">
-                 <xpath expr="//header" position="inside">
-                       <field name="state" nolabel="1" widget="statusbar" statusbar_visible="draft,post,bounce"/>
-                      <button name="post" string="Post"  class="oe_highlight"
-                            type="object" attrs="{'invisible': [('state', '=', 'post')]}"/>
-                     <button name="bounce" string="Bounce"  class="oe_highlight"
-                            type="object" attrs="{'invisible': [('state', '=', 'bounce')]}"/>
-                </xpath>
                 <form string="Cheque Transactions Details">
+
+                 <header>
+                     <field name="state" nolabel="1" widget="statusbar" statusbar_visible="draft,post,bounce"/>
+                     <button name="post" string="Post"  class="oe_highlight"
+                             type="object" attrs="{'invisible': [('state', '=', 'post')]}"/>
+                     <button name="bounce" string="Bounce"  class="oe_highlight"
+                             type="object" attrs="{'invisible': [('state', '=', 'bounce')]}"/>
+                 </header>
 
                     <sheet>
                      <center><H1>Cheque Details</H1></center>
@@ -1103,7 +1105,7 @@
             <field name="view_type">form</field>
             <field name="view_mode">tree,form,calendar,graph</field>
             <field eval="False" name="view_id"/>
-            <field name="domain">[('type','=','out_invoice'),('state','=','draft'),('holding_invoice','=',True)]</field>
+            <field name="domain">[('type','=','out_invoice'),('state','=','holding_invoice'),('holding_invoice','=',True), ('packing_slip','=',False)]</field>
             <field name="context">{'default_type':'out_invoice', 'type':'out_invoice', 'journal_type': 'sale','default_holding_invoice':1}</field>
             <field name="search_view_id" ref="account.view_account_invoice_filter"/>
             <field name="help" type="html">
@@ -1139,7 +1141,7 @@
             <field name="view_type">form</field>
             <field name="view_mode">tree,form,calendar,graph</field>
             <field eval="False" name="view_id"/>
-            <field name="domain">[('type','=','out_invoice'), ('state','=','draft'), ('packing_slip','=',True)]</field>
+            <field name="domain">[('type','=','out_invoice'), ('state','=','packing_slip'), ('packing_slip','=',True), ('holding_invoice','=',False)]</field>
             <field name="context">{'default_type':'out_invoice', 'type':'out_invoice', 'journal_type': 'sale', 'default_packing_slip':1}</field>
             <field name="search_view_id" ref="account.view_account_invoice_filter"/>
             <field name="help" type="html">

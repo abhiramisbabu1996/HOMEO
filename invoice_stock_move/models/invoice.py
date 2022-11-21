@@ -505,6 +505,25 @@ class Menu(models.Model):
 class InvoiceStockMove(models.Model):
     _inherit = 'account.invoice'
 
+
+    state = fields.Selection([
+            ('draft','Draft'),
+            ('packing_slip','Packing Slips'),
+            ('holding_invoice','Holding Invoice'),
+            ('proforma','Pro-forma'),
+            ('proforma2','Pro-forma'),
+            ('open','Open'),
+            ('paid','Paid'),
+            ('cancel','Cancelled'),
+        ], string='Status', index=True, readonly=True, default='draft',
+        track_visibility='onchange', copy=False,
+        help=" * The 'Draft' status is used when a user is encoding a new and unconfirmed Invoice.\n"
+             " * The 'Pro-forma' when invoice is in Pro-forma status,invoice does not have an invoice number.\n"
+             " * The 'Open' status is used when user create invoice,a invoice number is generated.Its in open status till user does not pay invoice.\n"
+             " * The 'Paid' status is set automatically when the invoice is paid. Its related journal entries may or may not be reconciled.\n"
+             " * The 'Cancelled' status is used when user cancel invoice.")
+
+
     @api.one
     def add_items(self):
         pass
@@ -514,6 +533,44 @@ class InvoiceStockMove(models.Model):
     seq = fields.Integer()
     holding_invoice = fields.Boolean()
     packing_slip = fields.Boolean()
+
+    @api.multi
+    def invoice_print(self):
+        if self.state == 'open':
+            self.state ='paid'
+        return super(InvoiceStockMove, self).invoice_print()
+
+    @api.multi
+    def move_to_holding_invoice(self):
+        for record in self:
+            record.holding_invoice = True
+            record.state = 'holding_invoice'
+            record.number2 = self.env['ir.sequence'].next_by_code('holding.invoice')
+        return
+
+    @api.multi
+    def move_to_picking_slip(self):
+        for record in self:
+            record.packing_slip = True
+            record.action_date_assign()
+            record.action_move_create()
+            record.action_number()
+            record.invoice_validate()
+            record.state = 'packing_slip'
+            record.number2 = self.env['ir.sequence'].next_by_code('packing.slip.invoice')
+        return
+
+    @api.multi
+    def import_to_invoice(self):
+        for record in self:
+            if record.state == 'packing_slip':
+                record.state = 'open'
+            else:
+                record.state = 'draft'
+            record.packing_slip = False
+            record.holding_invoice = False
+            record.number2 = self.env['ir.sequence'].next_by_code('customer.account.invoice')
+        return
 
     @api.multi
     def invoice_open(self):
@@ -557,20 +614,28 @@ class InvoiceStockMove(models.Model):
         if 'duplicate' in self._context:
             if self._context['duplicate']:
                 vals.update({'number2': self.browse(self._context['inv_id']).number2, 'duplicate': True})
-        elif vals.get('packing_slip'):
-            vals['number2'] = self.env['ir.sequence'].next_by_code('packing.slip.invoice')
-        elif vals.get('holding_invoice'):
-            vals['number2'] = self.env['ir.sequence'].next_by_code('holding.invoice')
-        elif vals.get('type') == 'in_invoice':
-            vals['number2'] = self.env['ir.sequence'].next_by_code('supplier.account.invoice')
-        else:
-            if vals.get('type') == 'out_invoice':
-                vals['number2'] = self.env['ir.sequence'].next_by_code('customer.account.invoice')
+
         result = super(InvoiceStockMove, self).create(vals)
+
         if result.type == 'in_invoice' and not result.number2:
             result.number2 = self.env['ir.sequence'].next_by_code('supplier.account.invoice')
+
         if result.type == 'out_invoice' and not result.number2:
             result.number2 = self.env['ir.sequence'].next_by_code('customer.account.invoice')
+
+        if result.packing_slip:
+            result.number2 = self.env['ir.sequence'].next_by_code('packing.slip.invoice')
+            result.action_date_assign()
+            result.action_move_create()
+            result.action_number()
+            result.invoice_validate()
+            result.state = 'packing_slip'
+
+        if result.holding_invoice:
+            result.number2 = self.env['ir.sequence'].next_by_code('holding.invoice')
+            result.holding_invoice = True
+            result.state = 'holding_invoice'
+
         return result
 
     @api.multi

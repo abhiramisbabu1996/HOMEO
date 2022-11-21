@@ -1,3 +1,4 @@
+/*
 .openerp .secondary_menu.oe_folded .oe_toggle_secondary_menu {
     position: static;
     border-left: none;
@@ -45,4 +46,12 @@ border-color: darkgrey;
 }
 .set_width {
     width:0px !important;
+}
+*/
+.openerp .oe_form_nosheet {
+    margin: 15px !important;
+}
+.openerp .oe_form .oe_title h1, .openerp .oe_form h1 {
+  font-weight: bold;
+  font-size: 1.5em;
 }
