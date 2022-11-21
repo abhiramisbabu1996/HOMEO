@@ -4,15 +4,20 @@ from openerp import models, fields, api
 class AccountInvoice(models.Model):
     _inherit = 'account.invoice'
 
+    def get_year(self):
+        year = self.env['account.fiscalyear'].search([('state','=','draft')])
+        if year:
+            return year
+
     local_customer = fields.Boolean("Local Customer", default=True)
     interstate_customer = fields.Boolean("Interstate Customer")
     b2b = fields.Boolean("B2B")
     b2c = fields.Boolean("B2C", default=True)
     bill_nature = fields.Selection([('gst', 'GST'), ('igst', 'IGST')], default='gst', compute='compute_bill')
-    doctor_name = fields.Many2one('res.partner','Doctor Name')
-    res_person = fields.Many2one('res.partner',string="Responsible Person")
-    address_new = fields.Text('Address',related="partner_id.address_new")
-    financial_year = fields.Many2one('account.fiscalyear','Financial Year')
+    doctor_name = fields.Many2one('res.partner', 'Doctor Name')
+    res_person = fields.Many2one('res.partner', string="Responsible Person")
+    address_new = fields.Text('Address', related="partner_id.address_new")
+    financial_year = fields.Many2one('account.fiscalyear', 'Financial Year', default=get_year)
     inv_sup_no = fields.Char('Invoice No')
     inv_amount = fields.Float('Invoice Amount')
 
@@ -21,21 +26,19 @@ class AccountInvoice(models.Model):
     #
     #     pass
 
-
     # @api.onchange('b2b')
     # def onchange_b2b(self):
     #     for rec in self:
     #         if rec.b2b:
 
-
-    @api.depends('interstate_customer','local_customer')
+    @api.depends('interstate_customer', 'local_customer')
     def compute_bill(self):
         for rec in self:
             if rec.local_customer:
                 rec.bill_nature = 'gst'
             if rec.interstate_customer:
                 rec.bill_nature = 'igst'
-    
+
     @api.multi
     def tree_stock(self):
         print("mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm")
@@ -92,10 +95,6 @@ class ResPartner(models.Model):
     drug_license_number = fields.Char()
     address_new = fields.Text('Address')
     res_person_id = fields.Boolean('Sale Responsible Person ?')
-
-
-
-
 
     @api.multi
     def open_tree_view(self, context=None):

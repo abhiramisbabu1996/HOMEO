@@ -151,9 +151,12 @@ class AccountInvoiceLine(models.Model):
     @api.one
     @api.depends('discount', 'calc')
     def _compute_mass_discount(self):
-        if self.discount ==0:
-            discount_rate = self.invoice_id.discount_rate
-            self.discount = discount_rate
+        if self.invoice_id.discount_rate == 0:
+            pass
+        else:
+            if self.discount ==0:
+                discount_rate = self.invoice_id.discount_rate
+                self.discount = discount_rate
 
 
     # CUSTOMER TAX CALCULATION
@@ -166,7 +169,7 @@ class AccountInvoiceLine(models.Model):
                 if rec.rate_amtc == 0:
                         if rec.rate_amtc < rec.price_subtotal:
                             if rec.rate_amtc == 0:
-                                print("NORMAL TAX")
+                                # print("NORMAL TAX")
                                 rate_amount = rec.price_subtotal
                                 perce = rec.invoice_line_tax_id4
                                 tax = rate_amount * (perce / 100)

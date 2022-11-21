@@ -44,6 +44,17 @@ class AccountInvoiceLine(models.Model):
 class AccountInvoice(models.Model):
     _inherit = "account.invoice"
 
+    # @api.model
+    # def create(self, vals):
+    #     result = super(AccountInvoice, self).create(vals)
+    #     if result.partner_id.customer == True:
+    #         dis = abs(result.amount_total - (result.amount_untaxed + result.amount_discount))
+    #         # result.amount_discount = dis
+    #         result.write({'amount_discount':dis})
+    #         print("variable val", result.amount_discount)
+    #         print("create activated",dis)
+    #     return result
+
     def invoice_pay_customer(self, cr, uid, ids, context=None):
         if not ids: return []
         dummy, view_id = self.pool.get('ir.model.data').get_object_reference(cr, uid, 'account_voucher',

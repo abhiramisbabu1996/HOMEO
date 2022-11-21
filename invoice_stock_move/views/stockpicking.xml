@@ -41,12 +41,22 @@
         <field name="inherit_id" ref="account.invoice_tree"/>
         <field name="arch" type="xml">
              <xpath expr="//field[@name='partner_id']" position="after">
-                  <field name="paid_bool" />
-                  <field name="cus_title_1" />
+                  <field name="paid_bool"/>
+<!--                  <field name="cus_title_1" />-->
           </xpath>
-            <xpath expr="//field[@name='number']" position="replace">
-                  <field name="number2" string="Number"/>
-          </xpath>
+            <xpath expr="//field[@name='user_id']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//field[@name='date_due']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//field[@name='origin']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+<!--            <xpath expr="//field[@name='number']" position="replace">-->
+<!--                  <field name="number2" string="Number"/>-->
+<!--          </xpath>-->
+
         </field>
         </record>
 
