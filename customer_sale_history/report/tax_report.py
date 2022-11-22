@@ -57,7 +57,7 @@ class TaxReportWizard(models.TransientModel):
         if self.product:
             domain += [('product_id', '=', self.product.id)]
         if self.potency:
-            domain += [('product_medicine_subcat', '=', self.potency.id)]
+            domain += [('medicine_name_subcat', '=', self.potency.id)]
         if self.packing:
             domain += [('medicine_name_packing', '=', self.packing.id)]
         if self.company:
