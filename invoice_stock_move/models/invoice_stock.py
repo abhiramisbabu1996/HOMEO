@@ -765,8 +765,7 @@ class InvoiceDetails(models.Model):
         if not vals.get('account_id'):
             account_id = self.env['account.invoice'].browse(int(vals.get('invoice_id'))).account_id.id
             vals.update({'account_id': account_id})
-        result = super(InvoiceDetails, self).create(vals)
-        return result
+        return super(InvoiceDetails, self).create(vals)
 
 
 class PartnerPayment(models.Model):
@@ -1231,9 +1230,9 @@ class PartnerPayment(models.Model):
 class AccountVoucher(models.Model):
     _inherit = 'account.voucher'
 
-    @api.model
-    def create(self, vals):
-        return super(AccountVoucher, self).create(vals)
+    # @api.model
+    # def create(self, vals):
+    #     return super(AccountVoucher, self).create(vals)
 
 
 class AccountInvoice(models.Model):

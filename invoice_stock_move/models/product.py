@@ -23,9 +23,9 @@ class Medicines(models.Model):
 
             # rec.default_code = rec.medicine_name_subcat.medicine_rack_subcat
 
-    @api.model
-    def create(self, vals):
-        result = super(Medicines, self).create(vals)
+    # @api.model
+    # def create(self, vals):
+    #     result = super(Medicines, self).create(vals)
         # ref = result.default_code
         # inte_ref = str(ref) + "ref:"+str(result.id)
         # ref_obj = self.env['product.template'].search([('default_code', '=', ref),('name','=',result.name)])
@@ -44,7 +44,7 @@ class Medicines(models.Model):
         #     result.default_code = ref
 
 
-        return result
+        # return result
 
 
 class MedicineRackSubcat(models.Model):
