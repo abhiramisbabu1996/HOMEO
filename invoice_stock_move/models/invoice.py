@@ -213,32 +213,61 @@ class AccountInvoiceLine(models.Model):
                         if flag == 1:
                             pass
                         else:
-                            if ((lines.company.id == rec.product_of.id) and (
-                                    lines.medicine_grp1.id == rec.medicine_grp.id) and (
-                                    lines.medicine_1.id == None) and (
-                                    lines.potency.id == rec.medicine_name_subcat.id) and (
-                                    lines.medicine_name_packing.id == rec.medicine_name_packing.id)):
-                                rec.discount = lines.discount
-                            else:
-                                if ((lines.company.id == rec.product_of.id) and (
-                                        lines.medicine_grp1.id == rec.medicine_grp.id) and (
-                                        lines.medicine_1.id == None) and (
-                                        lines.potency.id == rec.medicine_name_subcat.id) and (
-                                        lines.medicine_name_packing.id == None)):
-                                    rec.discount = lines.discount
-                                else:
+
+                            # print("Search in 2nd model")
+                            s_obj = self.env['supplier.discounts2'].search([('supplier', '=', rec.partner_id.id)])
+                            if s_obj:
+                                for lines in s_obj.lines:
+                                    if (lines.company.id == rec.product_of.id):
+                                        # if (lines.medicine_1.id == rec.product_id.id):
+                                            if (lines.potency.id == rec.medicine_name_subcat.id):
+                                                if (lines.medicine_grp1.id == rec.medicine_grp.id):
+                                                    if (lines.medicine_name_packing.id == rec.medicine_name_packing.id):
+                                                        rec.discount = lines.discount
+                                                        print("success")
+
+
+                                # if ((lines.company.id == rec.product_of.id) and (
+                                #         lines.medicine_grp1.id == rec.medicine_grp.id) and (
+                                #         lines.medicine_1.id == None) and (
+                                #         lines.potency.id == rec.medicine_name_subcat.id) and (
+                                #         lines.medicine_name_packing.id == rec.medicine_name_packing.id)):
+                                #     rec.discount = lines.discount
+                                # else:
                                     if ((lines.company.id == rec.product_of.id) and (
-                                            lines.medicine_grp1.id == rec.medicine_grp.id) and (
-                                            lines.medicine_1.id == None) and (
-                                            lines.potency.id == None) and (
-                                            lines.medicine_name_packing.id == rec.medicine_name_packing.id)):
+                                            lines.medicine_grp1.id == rec.medicine_grp.id)
+                                            and (
+                                            lines.potency.id == rec.medicine_name_subcat.id) and (
+                                            lines.medicine_name_packing.id == None)):
                                         rec.discount = lines.discount
                                     else:
                                         if ((lines.company.id == rec.product_of.id) and (
-                                                lines.medicine_grp1.id == rec.medicine_grp.id) and (
-                                                lines.medicine_1.id == None) and (lines.potency.id == None) and (
-                                                lines.medicine_name_packing.id == None)):
+                                                lines.medicine_grp1.id == rec.medicine_grp.id)and (
+                                                lines.potency.id == None) and (
+                                                lines.medicine_name_packing.id == rec.medicine_name_packing.id)):
                                             rec.discount = lines.discount
+                                        else:
+                                            if ((lines.company.id == rec.product_of.id) and (
+                                                    lines.medicine_grp1.id == rec.medicine_grp.id) and (lines.potency.id == None) and (
+                                                    lines.medicine_name_packing.id == None)):
+                                                rec.discount = lines.discount
+                                            if ((lines.company.id == rec.product_of.id)and(lines.medicine_name_packing.id == None)and(lines.potency.id == None)and(lines.medicine_grp1.id == rec.medicine_grp.id)):
+                                                rec.discount = lines.discount
+                                            if ((lines.company.id == None)and(lines.medicine_name_packing.id == rec.medicine_name_packing.id)and(lines.potency.id == rec.medicine_name_subcat.id)and(lines.medicine_grp1.id ==None)):
+                                                rec.discount = lines.discount
+                                            if ((lines.company.id == None)and(lines.medicine_name_packing.id == None)and(lines.potency.id == None)and(lines.medicine_grp1.id ==rec.medicine_grp.id)):
+                                                rec.discount = lines.discount
+                                            if ((lines.company.id == None)and(lines.medicine_name_packing.id == None)and(lines.potency.id == rec.medicine_name_subcat.id)and(lines.medicine_grp1.id ==None)):
+                                                rec.discount = lines.discount
+                                            if ((lines.company.id == None)and(lines.medicine_name_packing.id == rec.medicine_name_packing.id)and(lines.potency.id == None)and(lines.medicine_grp1.id ==None)):
+                                                rec.discount = lines.discount
+
+
+
+
+
+
+
 
 
             # FETCH EXTRA DDISCOUNT
