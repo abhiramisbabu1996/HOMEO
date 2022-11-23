@@ -100,40 +100,40 @@ class AccountInvoiceRefgen(models.Model):
 
 
     discount2 = fields.Float("DISCOUNT2")
-    discount3 = fields.Float("Dis2", )
+    discount3 = fields.Float("Dis2(%)", )
 
-
-    @api.model
-    def create(self, vals):
-        result = super(AccountInvoiceRefgen, self).create(vals)
-        if result.partner_id.supplier == True:
-            for inv_lines in result:
-                for lines in inv_lines:
-                    pdt_obj = self.env['product.product'].browse(lines.product_id.id)
-                    if lines.expiry_date:
-                        text = lines.expiry_date
-                        x = datetime.strptime(text, '%Y-%m-%d')
-                        exp_det = {
-
-                            'expiry_date': lines.expiry_date,
-                            'manf_date': lines.manf_date,
-                            'product_id': lines.product_id.id,
-                            'ref': pdt_obj.id,
-                            'alert_date': x - relativedelta(months=6)
-                        }
-                        # self.env['stock.production.lot'].create(exp_det)
-                        self.env['stock.production.lot']
-                        print(exp_det)
-                        pdt_obj_1 = self.env['product.template'].search([('default_code', '=', pdt_obj.default_code)])
-                        testtt = lines.invoice_line_tax_id.name
-                        print("lassttttttt", testtt)
-                        # pdt_obj.Tax_of_pdt = lines.invoice_line_tax_id
-                        # pdt_obj_1.Tax_of_pdt = lines.invoice_line_tax_id
-
-                    else:
-                        print("this medicine has no expiry and mfd")
-
-        return result
+    #
+    # @api.model
+    # def create(self, vals):
+    #     result = super(AccountInvoiceRefgen, self).create(vals)
+    #     if result.partner_id.supplier == True:
+    #         for inv_lines in result:
+    #             for lines in inv_lines:
+    #                 pdt_obj = self.env['product.product'].browse(lines.product_id.id)
+    #                 if lines.expiry_date:
+    #                     text = lines.expiry_date
+    #                     x = datetime.strptime(text, '%Y-%m-%d')
+    #                     exp_det = {
+    #
+    #                         'expiry_date': lines.expiry_date,
+    #                         'manf_date': lines.manf_date,
+    #                         'product_id': lines.product_id.id,
+    #                         'ref': pdt_obj.id,
+    #                         'alert_date': x - relativedelta(months=6)
+    #                     }
+    #                     # self.env['stock.production.lot'].create(exp_det)
+    #                     self.env['stock.production.lot']
+    #                     print(exp_det)
+    #                     pdt_obj_1 = self.env['product.template'].search([('default_code', '=', pdt_obj.default_code)])
+    #                     testtt = lines.invoice_line_tax_id.name
+    #                     print("lassttttttt", testtt)
+    #                     # pdt_obj.Tax_of_pdt = lines.invoice_line_tax_id
+    #                     # pdt_obj_1.Tax_of_pdt = lines.invoice_line_tax_id
+    #
+    #                 else:
+    #                     print("this medicine has no expiry and mfd")
+    #
+    #     return result
 
 
 class Batches(models.Model):
@@ -411,7 +411,7 @@ class AccountInvoiceLine(models.Model):
     calc = fields.Float('Cal', compute="_compute_mass_discount",)
     calc2 = fields.Float('Cal2',)
     calc3 = fields.Float('Cal3', )
-    new_disc = fields.Float('Disc2', compute="_compute_cus_ex_discount")
+    new_disc = fields.Float('Dis2(%)', compute="_compute_cus_ex_discount")
     amt_tax = fields.Float('Tax_amt')
     amt_w_tax = fields.Float('Total',compute="_compute_customer_tax")
     doctor_name = fields.Many2one('res.partner','Doctor Name')
@@ -424,25 +424,25 @@ class AccountInvoiceLine(models.Model):
         for rec in self:
             return {'domain': {'medicine_grp': [('medicine_name_subcat1', '=', rec.medicine_name_subcat.id)]}}
 
-    @api.onchange('batch_2')
-    def onchange_batch_id(self):
-        for rec in self:
-            if rec.product_id and rec.medicine_name_subcat:
-                if rec.batch_2:
-                    rack_obj = self.env['med.rack'].search([])
-                    if rack_obj:
-                        for item in rack_obj:
-                            for lines in item.racks:
-                                if (lines.product_id.id == rec.product_id.id):
-                                    if (lines.potency.id == rec.medicine_name_subcat.id):
-                                        if (lines.batch_2.id == rec.batch_2.id):
-                                            if (lines.company.id == rec.product_of.id):
-                                                if (lines.mrp == rec.price_unit):
-                                                    if (lines.medicine_name_packing.id == rec.medicine_name_packing.id):
-                                                        rec.medicine_rack = item.rack.id
-                                                        rec.rack_qty = lines.qty
-                                                        rec.manf_date = lines.manf_date
-                                                        rec.expiry_date = lines.expiry_date
+    # @api.onchange('batch_2')
+    # def onchange_batch_id(self):
+    #     for rec in self:
+    #         if rec.product_id and rec.medicine_name_subcat:
+    #             if rec.batch_2:
+    #                 rack_obj = self.env['med.rack'].search([])
+    #                 if rack_obj:
+    #                     for item in rack_obj:
+    #                         for lines in item.racks:
+    #                             if (lines.product_id.id == rec.product_id.id):
+    #                                 if (lines.potency.id == rec.medicine_name_subcat.id):
+    #                                     if (lines.batch_2.id == rec.batch_2.id):
+    #                                         if (lines.company.id == rec.product_of.id):
+    #                                             if (lines.mrp == rec.price_unit):
+    #                                                 if (lines.medicine_name_packing.id == rec.medicine_name_packing.id):
+    #                                                     rec.medicine_rack = item.rack.id
+    #                                                     rec.rack_qty = lines.qty
+    #                                                     rec.manf_date = lines.manf_date
+    #                                                     rec.expiry_date = lines.expiry_date
 
     # tax selection-based on group and potency
     @api.onchange('medicine_grp')
