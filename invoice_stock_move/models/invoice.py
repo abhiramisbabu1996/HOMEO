@@ -537,7 +537,12 @@ class InvoiceStockMove(models.Model):
     @api.multi
     def invoice_print(self):
         if self.state == 'open':
-            self.state ='paid'
+            self.state = 'paid'
+        if self.state == 'draft':
+            self.action_date_assign()
+            self.action_move_create()
+            self.action_number()
+            self.invoice_validate()
         return super(InvoiceStockMove, self).invoice_print()
 
     @api.multi
@@ -640,27 +645,31 @@ class InvoiceStockMove(models.Model):
 
     @api.multi
     def write(self, vals):
-        # if 'internal_number' in vals:
-            # if self.duplicate:
-            #     vals['internal_number'] = self.number2
-            #     vals['number2'] = self.number2
-            # else:
-            #     latest_ids = self.search([('duplicate', '=', False)], limit=2, order='id desc').ids
-            #     latest = self.search([('id', 'in', latest_ids)], limit=1, order='id asc')
-            #     if latest.number2:
-            #         last_index = int(latest.number2.split('/')[2]) + 1
-            #         if len(str(last_index)) < 4:
-            #             last_index = (4 - len(str(last_index))) * '0' + str(last_index)
-            #         index = latest.number2.split('/')
-            #         vals['number2'] = index[0] + "/" + index[1] + "/" + str(last_index)
-            #         vals['seq'] = int(latest.seq) + 1
-            #     else:
-            #         vals['seq'] = 1
-            #         vals['number2'] = "SAJ/2022/0001"
-            #     vals['internal_number'] = vals['number2']
-        result = super(InvoiceStockMove, self).write(vals)
-        # add custom codes here
-        return result
+        if 'internal_number' in vals:
+            vals['internal_number'] = self.number2
+            vals['number'] = self.number2
+        return super(InvoiceStockMove, self).write(vals)
+            
+    #         # if self.duplicate:
+    #         #     vals['internal_number'] = self.number2
+    #         #     vals['number2'] = self.number2
+    #         # else:
+    #         #     latest_ids = self.search([('duplicate', '=', False)], limit=2, order='id desc').ids
+    #         #     latest = self.search([('id', 'in', latest_ids)], limit=1, order='id asc')
+    #         #     if latest.number2:
+    #         #         last_index = int(latest.number2.split('/')[2]) + 1
+    #         #         if len(str(last_index)) < 4:
+    #         #             last_index = (4 - len(str(last_index))) * '0' + str(last_index)
+    #         #         index = latest.number2.split('/')
+    #         #         vals['number2'] = index[0] + "/" + index[1] + "/" + str(last_index)
+    #         #         vals['seq'] = int(latest.seq) + 1
+    #         #     else:
+    #         #         vals['seq'] = 1
+    #         #         vals['number2'] = "SAJ/2022/0001"
+    #         #     vals['internal_number'] = vals['number2']
+    #     result = super(InvoiceStockMove, self).write(vals)
+    #     # add custom codes here
+    #     return result
 
     def copy(self, cr, uid, id, default=None, context=None):
         context.update({'duplicate': True, 'inv_id': id})

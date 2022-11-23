@@ -31,20 +31,20 @@ class CreditLimitCustomerInv(models.Model):
                 print("inside credits onchange")
 
 
-    @api.model
-    def create(self, vals,):
-        result = super(CreditLimitCustomerInv, self).create(vals)
-        if vals.get('partner_id.customer') == True:
-            if vals.get('pay_mode' == 'credit'):
-                credit_amount = vals.get('partner_id.limit_amt')
-                used = vals.get('partner_id.used_credit_amt')
-                bal = credit_amount - used
-                if bal < vals.get('amount_total'):
-                    print("Credit Amount is over")
-                    raise Warning(_('This Customers Credit Limit Amount Rs. '+str(credit_amount)+'  has been Crossed.'+"\n" 'Check  '+result.partner_id.name+'s'+ ' Credit Limits'))
-        result = super(CreditLimitCustomerInv, self).create(vals)
-
-        return result
+    # @api.model
+    # def create(self, vals,):
+    #     result = super(CreditLimitCustomerInv, self).create(vals)
+    #     if vals.get('partner_id.customer') == True:
+    #         if vals.get('pay_mode' == 'credit'):
+    #             credit_amount = vals.get('partner_id.limit_amt')
+    #             used = vals.get('partner_id.used_credit_amt')
+    #             bal = credit_amount - used
+    #             if bal < vals.get('amount_total'):
+    #                 print("Credit Amount is over")
+    #                 raise Warning(_('This Customers Credit Limit Amount Rs. '+str(credit_amount)+'  has been Crossed.'+"\n" 'Check  '+result.partner_id.name+'s'+ ' Credit Limits'))
+    #     result = super(CreditLimitCustomerInv, self).create(vals)
+    #
+    #     return result
 
     # @api.model
     # def create(self, vals,):
