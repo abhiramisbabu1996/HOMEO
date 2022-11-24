@@ -625,7 +625,7 @@ class InvoiceStockMove(models.Model):
         if result.type == 'in_invoice' and not result.number2:
             result.number2 = self.env['ir.sequence'].next_by_code('supplier.account.invoice')
 
-        if result.type == 'out_invoice' and not result.number2:
+        if result.type == 'out_invoice' and not result.number2 and not result.packing_slip and not result.holding_invoice:
             result.number2 = self.env['ir.sequence'].next_by_code('customer.account.invoice')
 
         if result.packing_slip:
