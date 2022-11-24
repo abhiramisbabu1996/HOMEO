@@ -18,7 +18,7 @@ class CreditLimitCustomerInv(models.Model):
         print("hiiiiii")
         if res.partner_id.customer == True:
             if res.pay_mode.state == 'credit':
-                print("inside validate on behalf of credit limit")
+                print("inside validate")
         return res
 
         # add custom codes here

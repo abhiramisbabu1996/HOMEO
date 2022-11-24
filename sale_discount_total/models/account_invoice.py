@@ -8,7 +8,7 @@ from openerp.tools.translate import _
 class AccountInvoiceLine(models.Model):
     _inherit = "account.invoice.line"
 
-    discount = fields.Float(string='Dis1',
+    discount = fields.Float(string='Dis1(%)',
                             # digits=(16, 10),
                             # digits= dp.get_precision('Discount'),
                             default=0.0,
