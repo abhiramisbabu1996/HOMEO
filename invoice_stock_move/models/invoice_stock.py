@@ -580,12 +580,12 @@ class SupplierInvoiceLineTax(models.Model):
 
 class SupplierInvoiceLine(models.Model):
     _inherit = 'account.invoice.line'
-
-    invoice_line_tax_id = fields.Many2many('account.tax',
-                                           'account_invoice_line_tax', 'invoice_line_id', 'tax_id',
-                                           string='Taxes', related="product_id.Tax_of_pdt",
-                                           domain=[('parent_id', '=', False), '|', ('active', '=', False),
-                                                   ('active', '=', True)])
+    #
+    # invoice_line_tax_id = fields.Many2many('account.tax',
+    #                                        'account_invoice_line_tax', 'invoice_line_id', 'tax_id',
+    #                                        string='Taxes', related="product_id.Tax_of_pdt",
+    #                                        domain=[('parent_id', '=', False), '|', ('active', '=', False),
+    #                                                ('active', '=', True)])
 
     @api.multi
     def _create_stock_moves(self, picking):
