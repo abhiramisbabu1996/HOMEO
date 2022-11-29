@@ -403,7 +403,7 @@ class AccountInvoiceLine(models.Model):
                     # print("got")
                     new_rate = rec.rate_amtc
                     percentage = (new_rate / rec.price_subtotal) * 100
-                    rec.new_disc = percentage
+                    rec.new_disc = 100 - percentage
 
 
 

@@ -103,7 +103,7 @@
 <!--                         <field name="expiry_date"/>-->
 <!--                         <field name="expiry_date1"/>-->
                          <field name="medicine_rack"/>
-<!--                         <field name="hsn_code"/>-->
+                         <field name="hsn_code"/>
                 </xpath>
 <!--                <xpath expr="//field[@name='batch_2']" position="after">-->
 <!--                         <field name="manf_date"/>-->

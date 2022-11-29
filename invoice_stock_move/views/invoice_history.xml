@@ -37,7 +37,7 @@
             <sheet>
                 <center><H1>Supplier Discount Entry</H1></center>
                 <group>
-                    <field name="supplier"/>
+                    <field name="supplier" domain="[('supplier','=',True)]"/>
                 </group>
                 <notebook>
                 <page string="Discount Configuration">
@@ -62,7 +62,7 @@
             <field name="model">supplier.discounts</field>
             <field name="arch" type="xml">
                 <tree>
-                    <field name="supplier"/>
+                    <field name="supplier" domain="[('supplier','=',True)]"/>
                 </tree>
             </field>
         </record>
@@ -76,7 +76,7 @@
             <sheet>
                 <center><H1>Supplier Discount Entry</H1></center>
                 <group>
-                    <field name="supplier"/>
+                    <field name="supplier" domain="[('supplier','=',True)]"/>
                 </group>
                 <notebook>
                 <page string="Discount Configuration">
@@ -101,7 +101,7 @@
             <field name="model">supplier.discounts2</field>
             <field name="arch" type="xml">
                 <tree>
-                    <field name="supplier"/>
+                    <field name="supplier" domain="[('supplier','=',True)]"/>
                 </tree>
             </field>
         </record>
