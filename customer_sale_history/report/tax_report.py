@@ -8,6 +8,7 @@ class TaxReportWizard(models.TransientModel):
     _name = 'tax.report.wizard'
 
     from_date = fields.Date()
+    from_date = fields.Date()
     customer = fields.Many2one('res.partner', domain=[('customer', '=', True)])
     product = fields.Many2one('product.product')
     potency = fields.Many2one('product.medicine.subcat')
