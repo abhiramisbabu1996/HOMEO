@@ -183,9 +183,11 @@ class InvoiceLine(models.Model):
     _inherit = 'account.invoice.line'
 
     stock_entry_id = fields.Many2one('entry.stock')
+    stock_entry_qty = fields.Float()
 
     @api.model
-    def create(self,vals):
+    def create(self, vals):
+
         result = super(InvoiceLine, self).create(vals)
         if result.invoice_id.type == 'in_invoice':
             vals = {
@@ -206,6 +208,60 @@ class InvoiceLine(models.Model):
             }
             stock_entry = self.env['entry.stock'].create(vals)
             result.stock_entry_id = stock_entry.id
+        if result.invoice_id.type == 'out_invoice':
+            # for line in self.invoice_line:
+
+            vals = {
+                'partner_id': result.invoice_id.partner_id.id,
+                'title': result.invoice_id.cus_title_1.id,
+                'product_id': result.product_id.id,
+                'product_uom_qty': result.quantity,
+                'date': result.invoice_id.date_invoice
+
+            }
+            self.env['stock.transfer'].create(vals)
+
+            domain = []
+            if result.product_id:
+                domain += [('medicine_1', '=', result.product_id.id)]
+            if result.expiry_date:
+                domain += [('expiry_date', '=', result.expiry_date)]
+            if result.medicine_rack:
+                domain += [('rack', '=', result.medicine_rack.id)]
+            if result.product_of:
+                domain += [('company', '=', result.product_of.id)]
+            if result.medicine_grp:
+                domain += [('medicine_grp1', '=', result.medicine_grp.id)]
+            if result.medicine_name_packing:
+                domain += [('medicine_name_packing', '=', result.medicine_name_packing.id)]
+            if result.medicine_name_subcat:
+                domain += [('potency', '=', result.medicine_name_subcat.id)]
+
+            entry_stock_ids = self.env['entry.stock'].search(domain, order='id desc')
+            if not entry_stock_ids:
+                if result.medicine_rack:
+                    domain -= [('rack', '=', result.medicine_rack.id)]
+                    entry_stock_ids = self.env['entry.stock'].search(domain, order='id desc')
+            if not entry_stock_ids or sum(entry_stock_ids.mapped('qty')) <= 0:
+                raise Warning(_('Product with current combination is not available in stock'))
+            quantity = result.quantity
+            stock_entry_qty = 0
+            for stock in entry_stock_ids:
+                # if quantity > 0:
+                if stock.qty >= quantity:
+                    stock.write({
+                        'qty': stock.qty - quantity,
+                    })
+                    stock_entry_qty += quantity
+                    # quantity -= stock.qty
+                    break
+                else:
+                    stock.write({
+                        'qty': 0
+                    })
+                    stock_entry_qty += stock.qty
+                quantity -= stock.qty
+            result.stock_entry_qty = stock_entry_qty
         return result
 
     #
@@ -214,6 +270,89 @@ class InvoiceLine(models.Model):
 
     @api.multi
     def write(self, vals):
+        if self.invoice_id.type == 'out_invoice':
+            # list_keys = ['product_id', 'expiry_date', 'medicine_rack',
+            #              'product_of', 'medicine_grp', 'medicine_name_packing',
+            #              'medicine_name_subcat', 'quantity', 'hsn_code']
+
+            # if vals.get('packing_slip') or self.state not in ['draft', 'holding_invoice']:
+            if vals.get('packing_slip') or self.invoice_id.state == 'packing_slip':
+                if ('product_id', 'expiry_date', 'medicine_rack', 'product_of', 'medicine_grp', 'medicine_name_packing', 'medicine_name_subcat', 'quantity', 'hsn_code') in vals:
+                    domain = []
+
+                    if vals.get('product_id'):
+                        domain += [('medicine_1', '=', vals.get('product_id'))]
+                    else:
+                        if self.product_id:
+                            domain += [('medicine_1', '=', self.product_id.id)]
+
+                    if vals.get('expiry_date'):
+                        domain += [('medicine_1', '=', vals.get('expiry_date'))]
+                    else:
+                        if self.expiry_date:
+                            domain += [('expiry_date', '=', self.expiry_date)]
+
+                    if vals.get('medicine_rack'):
+                        domain += [('medicine_1', '=', vals.get('medicine_rack'))]
+                    else:
+                        if self.medicine_rack:
+                            domain += [('rack', '=', self.medicine_rack.id)]
+
+                    if vals.get('product_of'):
+                        domain += [('medicine_1', '=', vals.get('product_of'))]
+                    else:
+                        if self.product_of:
+                            domain += [('company', '=', self.product_of.id)]
+
+                    if vals.get('medicine_grp'):
+                        domain += [('medicine_1', '=', vals.get('medicine_grp'))]
+                    else:
+                        if self.medicine_grp:
+                            domain += [('medicine_grp1', '=', self.medicine_grp.id)]
+
+                    if vals.get('medicine_name_packing'):
+                        domain += [('medicine_1', '=', vals.get('medicine_name_packing'))]
+                    else:
+                        if self.medicine_name_packing:
+                            domain += [('medicine_name_packing', '=', self.medicine_name_packing.id)]
+
+                    if vals.get('medicine_name_subcat'):
+                        domain += [('medicine_1', '=', vals.get('medicine_name_subcat'))]
+                    else:
+                        if self.medicine_name_subcat:
+                            domain += [('potency', '=', self.medicine_name_subcat.id)]
+
+                    if vals.get('hsn_code'):
+                        domain += [('medicine_1', '=', vals.get('hsn_code'))]
+                    else:
+                        if self.hsn_code:
+                            domain += [('hsn_code', '=', self.hsn_code)]
+                    entry_stock_ids = self.env['entry.stock'].search(domain, order='id desc')
+                    if not entry_stock_ids or sum(entry_stock_ids.mapped('qty')):
+                        if self.medicine_rack:
+                            domain -= [('rack', '=', self.medicine_rack.id)]
+                            entry_stock_ids = self.env['entry.stock'].search(domain, order='id desc')
+                    if not entry_stock_ids or sum(entry_stock_ids.mapped('qty')) <= 0:
+                        raise Warning(
+                            _('Only we have %s Products with current combination in stock') % self.stock_entry_qty)
+                    quantity = self.quantity
+                    stock_entry_qty = 0
+                    for stock in entry_stock_ids:
+                        # if quantity > 0:
+                        if stock.qty >= quantity:
+                            stock.write({
+                                'qty': stock.qty - quantity,
+                            })
+                            stock_entry_qty += quantity
+                            # quantity -= stock.qty
+                            break
+                        else:
+                            stock.write({
+                                'qty': 0
+                            })
+                            stock_entry_qty += stock.qty
+                        quantity -= stock.qty
+                    vals['stock_entry_qty'] = stock_entry_qty
         res = super(InvoiceLine, self).write(vals)
         if self.invoice_id.type == 'in_invoice':
             vals = {
@@ -235,12 +374,48 @@ class InvoiceLine(models.Model):
             result = self.stock_entry_id.update(vals)
         return res
 
+    @api.multi
+    def unlink(self):
+        for rec in self:
+            if rec.invoice_id.state in ['draft', 'holding_invoice', 'packing_slip']:
+                if rec.invoice_id.type == 'in_invoice':
+                    if rec.stock_entry_id:
+                        rec.stock_entry_id.unlink()
+                if rec.invoice_id.type == 'out_invoice':
+                    if rec.packing_slip:
+                        if rec.stock_entry_qty:
+                            domain = []
+                            if rec.product_id:
+                                domain += [('medicine_1', '=', rec.product_id.id)]
+                            if rec.expiry_date:
+                                domain += [('expiry_date', '=', rec.expiry_date)]
+                            if rec.medicine_rack:
+                                domain += [('rack', '=', rec.medicine_rack.id)]
+                            if rec.product_of:
+                                domain += [('company', '=', rec.product_of.id)]
+                            if rec.medicine_grp:
+                                domain += [('medicine_grp1', '=', rec.medicine_grp.id)]
+                            if rec.medicine_name_packing:
+                                domain += [('medicine_name_packing', '=', rec.medicine_name_packing.id)]
+                            if rec.medicine_name_subcat:
+                                domain += [('potency', '=', rec.medicine_name_subcat.id)]
+
+                            entry_stock_id = self.env['entry.stock'].search(domain, order='id desc', limit=1)
+                            if not entry_stock_id:
+                                if rec.medicine_rack:
+                                    domain -= [('rack', '=', self.medicine_rack.id)]
+                                    entry_stock_id = self.env['entry.stock'].search(domain, order='id desc', limit=1)
+                            entry_stock_id.write({
+                                'qty': entry_stock_id.qty + rec.quantity,
+                            })
+            else:
+                raise Warning("Only Draft Invoice Lines can be deleted")
+        return super(InvoiceLine, self).unlink()
 
 
 # UPDATE TAX BUTTON
 class InvoiceStockMove(models.Model):
     _inherit = 'account.invoice'
-
 
     # TAX UPDATION IN SAVE BUTTON
     # @api.model
@@ -255,59 +430,59 @@ class InvoiceStockMove(models.Model):
     #     result.amount_total = result.amount_total + tax_total
     #     if not result.holding_invoice or not result.packing_slip:
     #         if result.type != 'in_invoice':
-                # if result.b2c:
-                #     result.state = 'paid'
-        # return result
+    # if result.b2c:
+    #     result.state = 'paid'
+    # return result
 
     # @api.multi
     # def write(self, vals):
-        # if self.type == 'in_invoice':
-        #     if vals.get('invoice_line'):
-        #         for rec in vals.get('invoice_line'):
-        #             if rec[2] and rec[1] == False:
-        #                 line = rec[2]
-        #                 vals = {
-        #                     'expiry_date': line['expiry_date'],
-        #                     'manf_date': line['manf_date'],
-        #                     'company': line['product_of'],
-        #                     'medicine_1': line['product_id'],
-        #                     'potency': line['medicine_name_subcat'],
-        #                     'medicine_name_packing': line['medicine_name_packing'],
-        #                     'medicine_grp1': line['medicine_grp'],
-        #                     'batch_2': line['batch_2'],
-        #                     'mrp': line['price_unit'],
-        #                     'qty': line['quantity'],
-        #                     'rack': line['medicine_rack'],
-        #                     # 'hsn_code': line['hsn_code'],
-        #                     'discount': line['discount'],
-        #                     'invoice_line_tax_id4': line['invoice_line_tax_id4'],
-        #                 }
-        #                 stock_entry = self.env['entry.stock'].create(vals)
-        #                 vals.update({'stock_entry_id': stock_entry.id})
-        # res = super(InvoiceStockMove, self).write(vals)
-        # if self.type == 'in_invoice':
-            # if vals.get('invoice_line'):
-            #     for rec in vals.get('invoice_line'):
-            #         if rec[2] and rec[1]:
-            #             line = rec[2]
-            #             vals = {
-            #                 'expiry_date': line.expiry_date,
-            #                 'manf_date': line.manf_date,
-            #                 'company': line.product_of.id,
-            #                 'medicine_1': line.product_id.id,
-            #                 'potency': line.medicine_name_subcat.id,
-            #                 'medicine_name_packing': line.medicine_name_packing.id,
-            #                 'medicine_grp1': line.medicine_grp.id,
-            #                 'batch_2': line.batch_2.id,
-            #                 'mrp': line.price_unit,
-            #                 'qty': line.quantity,
-            #                 'rack': line.medicine_rack.id,
-            #                 # 'hsn_code': line.hsn_code,
-            #                 'discount': line.discount,
-            #                 'invoice_line_tax_id4': line.invoice_line_tax_id4,
-            #             }
-            #             line.stock_entry_id.update(vals)
-        # return res
+    # if self.type == 'in_invoice':
+    #     if vals.get('invoice_line'):
+    #         for rec in vals.get('invoice_line'):
+    #             if rec[2] and rec[1] == False:
+    #                 line = rec[2]
+    #                 vals = {
+    #                     'expiry_date': line['expiry_date'],
+    #                     'manf_date': line['manf_date'],
+    #                     'company': line['product_of'],
+    #                     'medicine_1': line['product_id'],
+    #                     'potency': line['medicine_name_subcat'],
+    #                     'medicine_name_packing': line['medicine_name_packing'],
+    #                     'medicine_grp1': line['medicine_grp'],
+    #                     'batch_2': line['batch_2'],
+    #                     'mrp': line['price_unit'],
+    #                     'qty': line['quantity'],
+    #                     'rack': line['medicine_rack'],
+    #                     # 'hsn_code': line['hsn_code'],
+    #                     'discount': line['discount'],
+    #                     'invoice_line_tax_id4': line['invoice_line_tax_id4'],
+    #                 }
+    #                 stock_entry = self.env['entry.stock'].create(vals)
+    #                 vals.update({'stock_entry_id': stock_entry.id})
+    # res = super(InvoiceStockMove, self).write(vals)
+    # if self.type == 'in_invoice':
+    # if vals.get('invoice_line'):
+    #     for rec in vals.get('invoice_line'):
+    #         if rec[2] and rec[1]:
+    #             line = rec[2]
+    #             vals = {
+    #                 'expiry_date': line.expiry_date,
+    #                 'manf_date': line.manf_date,
+    #                 'company': line.product_of.id,
+    #                 'medicine_1': line.product_id.id,
+    #                 'potency': line.medicine_name_subcat.id,
+    #                 'medicine_name_packing': line.medicine_name_packing.id,
+    #                 'medicine_grp1': line.medicine_grp.id,
+    #                 'batch_2': line.batch_2.id,
+    #                 'mrp': line.price_unit,
+    #                 'qty': line.quantity,
+    #                 'rack': line.medicine_rack.id,
+    #                 # 'hsn_code': line.hsn_code,
+    #                 'discount': line.discount,
+    #                 'invoice_line_tax_id4': line.invoice_line_tax_id4,
+    #             }
+    #             line.stock_entry_id.update(vals)
+    # return res
 
     @api.multi
     def button_reset_taxes(self):
@@ -388,23 +563,23 @@ class InvoiceStockMove(models.Model):
     @api.multi
     def action_stock_receive(self):
         # for line in self.invoice_line:
-            # vals = {
-            #     'expiry_date': line.expiry_date,
-            #     'manf_date': line.manf_date,
-            #     'company': line.product_of.id,
-            #     'medicine_1': line.product_id.id,
-            #     'potency': line.medicine_name_subcat.id,
-            #     'medicine_name_packing': line.medicine_name_packing.id,
-            #     'medicine_grp1': line.medicine_grp.id,
-            #     'batch_2': line.batch_2.id,
-            #     'mrp': line.price_unit,
-            #     'qty': line.quantity,
-            #     'rack': line.medicine_rack.id,
-            ##     'hsn_code': line.hsn_code,
-            #     'discount': line.discount,
-            #     'invoice_line_tax_id4': line.invoice_line_tax_id4,
-            # }
-            # self.env['entry.stock'].create(vals)
+        # vals = {
+        #     'expiry_date': line.expiry_date,
+        #     'manf_date': line.manf_date,
+        #     'company': line.product_of.id,
+        #     'medicine_1': line.product_id.id,
+        #     'potency': line.medicine_name_subcat.id,
+        #     'medicine_name_packing': line.medicine_name_packing.id,
+        #     'medicine_grp1': line.medicine_grp.id,
+        #     'batch_2': line.batch_2.id,
+        #     'mrp': line.price_unit,
+        #     'qty': line.quantity,
+        #     'rack': line.medicine_rack.id,
+        ##     'hsn_code': line.hsn_code,
+        #     'discount': line.discount,
+        #     'invoice_line_tax_id4': line.invoice_line_tax_id4,
+        # }
+        # self.env['entry.stock'].create(vals)
 
         # CODE FOR CREATING CUSTOMMODEL RECORDS FOR RECEIVED MEDICINES
         # self.env['stock.pick'].create({'product_id': line.product_id,
@@ -445,26 +620,59 @@ class InvoiceStockMove(models.Model):
 
     @api.multi
     def action_stock_transfer(self):
-        for line in self.invoice_line:
-            self.env['stock.transfer'].create({
-                'partner_id': self.partner_id.id,
-                'title': self.cus_title_1.id,
-                'product_id': line.product_id.id,
-                'product_uom_qty': line.quantity,
-                'date': self.date_invoice})
+        if not self.packing_slip_new:
+            for line in self.invoice_line:
+                self.env['stock.transfer'].create({
+                    'partner_id': self.partner_id.id,
+                    'title': self.cus_title_1.id,
+                    'product_id': line.product_id.id,
+                    'product_uom_qty': line.quantity,
+                    'date': self.date_invoice})
 
-            if line.rack_qty:
+                domain = []
+                if line.product_id:
+                    domain += [('medicine_1', '=', line.product_id.id)]
+                if line.expiry_date:
+                    domain += [('expiry_date', '=', line.expiry_date)]
+                # if line.medicine_rack:
+                #     domain += [('rack', '=', line.medicine_rack.id)]
+                if line.product_of:
+                    domain += [('company', '=', line.product_of.id)]
+                if line.medicine_grp:
+                    domain += [('medicine_grp1', '=', line.medicine_grp.id)]
+                if line.medicine_name_packing:
+                    domain += [('medicine_name_packing', '=', line.medicine_name_packing.id)]
+                if line.medicine_name_subcat:
+                    domain += [('potency', '=', line.medicine_name_subcat.id)]
 
-                obj = self.env['entry.stock'].search([('rack', '=', line.medicine_rack.id)])
-                for lines in obj:
-                    if (lines.medicine_1.id == line.product_id.id):
-                        if (lines.potency.id == line.medicine_name_subcat.id):
-                            if (lines.batch_2.id == line.batch_2.id):
-                                old_qty = lines.qty
-                                new_qty = old_qty - line.quantity
-                                lines.write({
-                                    'qty': new_qty,
+                entry_stock_ids = self.env['entry.stock'].search(domain, order='id desc')
+
+                quantity = line.quantity
+                for stock in entry_stock_ids:
+                    # if quantity > 0:
+                    if stock.qty >= quantity:
+                        stock.write({
+                                    'qty': stock.qty - quantity,
                                 })
+                        # quantity -= stock.qty
+                        break
+                    else:
+                        stock.write({
+                            'qty': stock.qty - line.quantity,
+                        })
+                    quantity -= stock.qty
+
+        # obj = self.env['entry.stock'].search([('rack', '=', line.medicine_rack.id)])
+        #
+        #         for lines in obj:
+        #             if (lines.medicine_1.id == line.product_id.id):
+        #                 if (lines.potency.id == line.medicine_name_subcat.id):
+        #                     if (lines.batch_2.id == line.batch_2.id):
+        #                         old_qty = lines.qty
+        #                         new_qty = old_qty - line.quantity
+        #                         lines.write({
+        #                             'qty': new_qty,
+        #                         })
 
         for order in self:
             if not order.invoice_line:
@@ -506,9 +714,7 @@ class InvoiceStockMove(models.Model):
 
     @api.multi
     def invoice_validate(self):
-        if self.type == 'in_invoice':
-            self.action_stock_receive()
-        if self.type != 'in_invoice':
+        if self.type != 'in_invoice' and not self.packing_slip:
             self.action_stock_transfer()
         return self.write({'state': 'open'})
 
@@ -580,6 +786,7 @@ class SupplierInvoiceLineTax(models.Model):
 
 class SupplierInvoiceLine(models.Model):
     _inherit = 'account.invoice.line'
+
     #
     # invoice_line_tax_id = fields.Many2many('account.tax',
     #                                        'account_invoice_line_tax', 'invoice_line_id', 'tax_id',
@@ -756,7 +963,7 @@ class InvoiceDetails(models.Model):
     _name = 'invoice.details'
     _inherits = {'account.invoice': 'invoice_id'}
 
-    invoice_id = fields.Many2one('account.invoice')
+    invoice_id = fields.Many2one('account.invoice', required=True)
     partner_payment_id = fields.Many2one('partner.payment')
     select = fields.Boolean()
 
@@ -773,7 +980,7 @@ class PartnerPayment(models.Model):
     _name = 'partner.payment'
     _rec_name = 'reference_number'
 
-    voucher_relation_id = fields.Many2one('account.voucher')
+    voucher_relation_id = fields.Many2one('account.voucher', required=True)
     res_person_id = fields.Many2one('res.partner', domain=[('res_person_id', '=', True)])
     partner_id = fields.Many2one('res.partner')
     reference_number = fields.Char()
