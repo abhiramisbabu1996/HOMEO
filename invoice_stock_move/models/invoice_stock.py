@@ -184,6 +184,7 @@ class InvoiceLine(models.Model):
 
     stock_entry_id = fields.Many2one('entry.stock')
     stock_entry_qty = fields.Float()
+    stock_transfer_id = fields.Many2one('stock.transfer')
 
     @api.model
     def create(self, vals):
@@ -220,7 +221,7 @@ class InvoiceLine(models.Model):
                 'date': result.invoice_id.date_invoice
 
             }
-            self.env['stock.transfer'].create(vals)
+            result.stock_transfer_id = self.env['stock.transfer'].create(vals).id
 
             domain = []
             if result.product_id:
@@ -245,7 +246,15 @@ class InvoiceLine(models.Model):
                     entry_stock_ids = self.env['entry.stock'].search(domain, order='id desc')
             if not entry_stock_ids or sum(entry_stock_ids.mapped('qty')) <= 0:
                 raise Warning(_('Product with current combination is not available in stock'))
+
+            stock_transfer_id = self.env['stock.transfer'].create({
+                'partner_id': result.invoice_id.partner_id.id,
+                'title': result.invoice_id.cus_title_1.id,
+                'product_id': result.product_id.id,
+                'product_uom_qty': result.quantity,
+                'date': result.invoice_id.date_invoice})
             quantity = result.quantity
+            result.stock_transfer_id = stock_transfer_id.id
             stock_entry_qty = 0
             for stock in entry_stock_ids:
                 # if quantity > 0:
@@ -336,7 +345,9 @@ class InvoiceLine(models.Model):
                     if not entry_stock_ids or sum(entry_stock_ids.mapped('qty')) <= 0:
                         raise Warning(
                             _('Only we have %s Products with current combination in stock') % int(self.stock_entry_qty)+int(sum(entry_stock_ids.mapped('qty'))))
-                    quantity = self.quantity
+                    quantity = vals.get('quantity') or self.quantity
+
+
                     for stock in entry_stock_ids:
                         # if quantity > 0:
                         if stock.qty >= quantity:
@@ -620,88 +631,90 @@ class InvoiceStockMove(models.Model):
     def action_stock_transfer(self):
         if not self.packing_slip_new:
             for line in self.invoice_line:
-                self.env['stock.transfer'].create({
-                    'partner_id': self.partner_id.id,
-                    'title': self.cus_title_1.id,
-                    'product_id': line.product_id.id,
-                    'product_uom_qty': line.quantity,
-                    'date': self.date_invoice})
+                if not line.stock_transfer_id:
+                    stock_transfer_id = self.env['stock.transfer'].create({
+                        'partner_id': self.partner_id.id,
+                        'title': self.cus_title_1.id,
+                        'product_id': line.product_id.id,
+                        'product_uom_qty': line.quantity,
+                        'date': self.date_invoice})
+                    line.stock_transfer_id = stock_transfer_id.id
 
-                domain = []
-                if line.product_id:
-                    domain += [('medicine_1', '=', line.product_id.id)]
-                if line.expiry_date:
-                    domain += [('expiry_date', '=', line.expiry_date)]
-                # if line.medicine_rack:
-                #     domain += [('rack', '=', line.medicine_rack.id)]
-                if line.product_of:
-                    domain += [('company', '=', line.product_of.id)]
-                if line.medicine_grp:
-                    domain += [('medicine_grp1', '=', line.medicine_grp.id)]
-                if line.medicine_name_packing:
-                    domain += [('medicine_name_packing', '=', line.medicine_name_packing.id)]
-                if line.medicine_name_subcat:
-                    domain += [('potency', '=', line.medicine_name_subcat.id)]
+                    domain = []
+                    if line.product_id:
+                        domain += [('medicine_1', '=', line.product_id.id)]
+                    if line.expiry_date:
+                        domain += [('expiry_date', '=', line.expiry_date)]
+                    # if line.medicine_rack:
+                    #     domain += [('rack', '=', line.medicine_rack.id)]
+                    if line.product_of:
+                        domain += [('company', '=', line.product_of.id)]
+                    if line.medicine_grp:
+                        domain += [('medicine_grp1', '=', line.medicine_grp.id)]
+                    if line.medicine_name_packing:
+                        domain += [('medicine_name_packing', '=', line.medicine_name_packing.id)]
+                    if line.medicine_name_subcat:
+                        domain += [('potency', '=', line.medicine_name_subcat.id)]
 
-                entry_stock_ids = self.env['entry.stock'].search(domain, order='id desc')
-                # if not entry_stock_ids or sum(entry_stock_ids.mapped('qty')):
-                #     if line.medicine_rack:
-                #         domain.remove([('rack', '=', line.medicine_rack.id)])
-                #         entry_stock_ids = self.env['entry.stock'].search(domain, order='id desc')
-                if not entry_stock_ids or sum(entry_stock_ids.mapped('qty')) <= 0:
-                    raise Warning(
-                        _('Only we have %s Products with current combination in stock') % line.stock_entry_qty)
+                    entry_stock_ids = self.env['entry.stock'].search(domain, order='id desc')
+                    # if not entry_stock_ids or sum(entry_stock_ids.mapped('qty')):
+                    #     if line.medicine_rack:
+                    #         domain.remove([('rack', '=', line.medicine_rack.id)])
+                    #         entry_stock_ids = self.env['entry.stock'].search(domain, order='id desc')
+                    if not entry_stock_ids or sum(entry_stock_ids.mapped('qty')) <= 0:
+                        raise Warning(
+                            _('Only we have %s Products with current combination in stock') % int(line.stock_entry_qty)+int(sum(entry_stock_ids.mapped('qty'))))
 
-                quantity = line.quantity
-                for stock in entry_stock_ids:
-                    # if quantity > 0:
-                    if stock.qty >= quantity:
-                        stock.write({
-                                    'qty': stock.qty - quantity,
-                                })
-                        # quantity -= stock.qty
-                        break
-                    else:
-                        stock.write({
-                            'qty': stock.qty - line.quantity,
-                        })
-                    quantity -= stock.qty
-                line.stock_entry_qty = line.quantity
-        # obj = self.env['entry.stock'].search([('rack', '=', line.medicine_rack.id)])
-        #
-        #         for lines in obj:
-        #             if (lines.medicine_1.id == line.product_id.id):
-        #                 if (lines.potency.id == line.medicine_name_subcat.id):
-        #                     if (lines.batch_2.id == line.batch_2.id):
-        #                         old_qty = lines.qty
-        #                         new_qty = old_qty - line.quantity
-        #                         lines.write({
-        #                             'qty': new_qty,
-        #                         })
+                    quantity = line.quantity
+                    for stock in entry_stock_ids:
+                        # if quantity > 0:
+                        if stock.qty >= quantity:
+                            stock.write({
+                                        'qty': stock.qty - quantity,
+                                    })
+                            # quantity -= stock.qty
+                            break
+                        else:
+                            stock.write({
+                                'qty': stock.qty - line.quantity,
+                            })
+                        quantity -= stock.qty
+                    line.stock_entry_qty = line.quantity
+            # obj = self.env['entry.stock'].search([('rack', '=', line.medicine_rack.id)])
+            #
+            #         for lines in obj:
+            #             if (lines.medicine_1.id == line.product_id.id):
+            #                 if (lines.potency.id == line.medicine_name_subcat.id):
+            #                     if (lines.batch_2.id == line.batch_2.id):
+            #                         old_qty = lines.qty
+            #                         new_qty = old_qty - line.quantity
+            #                         lines.write({
+            #                             'qty': new_qty,
+            #                         })
 
-        for order in self:
-            if not order.invoice_line:
-                pass
-                # raise UserError(_('Please create some invoice lines.'))
-            if not self.number:
-                pass
-                # raise UserError(_('Please Validate invoice.'))
-            if not self.invoice_picking_id:
-                pick = {
-                    'picking_type_id': self.picking_transfer_id.id,
-                    'partner_id': self.partner_id.id,
-                    'origin': self.number,
-                    'location_dest_id': self.partner_id.property_stock_customer.id,
-                    'location_id': self.picking_transfer_id.default_location_src_id.id
-                }
-                picking = self.env['stock.picking'].create(pick)
-                self.invoice_picking_id = picking.id
-                self.picking_count = len(picking)
-                moves = order.invoice_line.filtered(
-                    lambda r: r.product_id.type in ['product', 'consu'])._create_stock_moves_transfer(picking)
-                move_ids = moves.action_confirm()
-                move_ids = moves.action_assign()
-                move_ids = moves.action_done()
+            for order in self:
+                if not order.invoice_line:
+                    pass
+                    # raise UserError(_('Please create some invoice lines.'))
+                if not self.number:
+                    pass
+                    # raise UserError(_('Please Validate invoice.'))
+                if not self.invoice_picking_id:
+                    pick = {
+                        'picking_type_id': self.picking_transfer_id.id,
+                        'partner_id': self.partner_id.id,
+                        'origin': self.number,
+                        'location_dest_id': self.partner_id.property_stock_customer.id,
+                        'location_id': self.picking_transfer_id.default_location_src_id.id
+                    }
+                    picking = self.env['stock.picking'].create(pick)
+                    self.invoice_picking_id = picking.id
+                    self.picking_count = len(picking)
+                    moves = order.invoice_line.filtered(
+                        lambda r: r.product_id.type in ['product', 'consu'])._create_stock_moves_transfer(picking)
+                    move_ids = moves.action_confirm()
+                    move_ids = moves.action_assign()
+                    move_ids = moves.action_done()
 
     @api.multi
     def action_view_picking(self):

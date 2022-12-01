@@ -449,11 +449,12 @@ class AccountInvoiceLine(models.Model):
 
     @api.onchange('product_id')
     def product_id_change_new(self):
+        self.name = self.product_id.name
         rack_ids = []
         stock = self.env['entry.stock'].search([('medicine_1','=',self.product_id.id)])
         for rec in stock:
             rack_ids.append(rec.rack.id)
-        print("racks are",rack_ids)
+        print("racks are", rack_ids)
 
         # for rec in self:
         return {'domain': {'medicine_rack': [('id', '=', rack_ids)]}}
