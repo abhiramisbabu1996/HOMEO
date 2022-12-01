@@ -208,7 +208,8 @@ class InvoiceLine(models.Model):
             }
             stock_entry = self.env['entry.stock'].create(vals)
             result.stock_entry_id = stock_entry.id
-        if result.invoice_id.type == 'out_invoice':
+        if result.invoice_id.type == 'out_invoice' and result.invoice_id.state == 'packing_slip':
+
             # for line in self.invoice_line:
 
             vals = {

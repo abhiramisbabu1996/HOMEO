@@ -597,8 +597,10 @@ class InvoiceStockMove(models.Model):
     @api.multi
     def move_to_picking_slip(self):
         for record in self:
+            record.action_stock_receive()
             record.packing_slip = True
             record.packing_slip_new = True
+
             # record.action_date_assign()
             # record.action_move_create()
             # record.action_number()
