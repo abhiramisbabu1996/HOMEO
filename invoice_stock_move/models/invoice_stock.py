@@ -335,25 +335,22 @@ class InvoiceLine(models.Model):
                             entry_stock_ids = self.env['entry.stock'].search(domain, order='id desc')
                     if not entry_stock_ids or sum(entry_stock_ids.mapped('qty')) <= 0:
                         raise Warning(
-                            _('Only we have %s Products with current combination in stock') % self.stock_entry_qty)
+                            _('Only we have %s Products with current combination in stock') % int(self.stock_entry_qty)+int(sum(entry_stock_ids.mapped('qty'))))
                     quantity = self.quantity
-                    stock_entry_qty = 0
                     for stock in entry_stock_ids:
                         # if quantity > 0:
                         if stock.qty >= quantity:
                             stock.write({
                                 'qty': stock.qty - quantity,
                             })
-                            stock_entry_qty += quantity
                             # quantity -= stock.qty
                             break
                         else:
                             stock.write({
                                 'qty': 0
                             })
-                            stock_entry_qty += stock.qty
                         quantity -= stock.qty
-                    vals['stock_entry_qty'] = stock_entry_qty
+                    vals['stock_entry_qty'] = quantity
         res = super(InvoiceLine, self).write(vals)
         if self.invoice_id.type == 'in_invoice':
             vals = {
@@ -647,6 +644,13 @@ class InvoiceStockMove(models.Model):
                     domain += [('potency', '=', line.medicine_name_subcat.id)]
 
                 entry_stock_ids = self.env['entry.stock'].search(domain, order='id desc')
+                # if not entry_stock_ids or sum(entry_stock_ids.mapped('qty')):
+                #     if line.medicine_rack:
+                #         domain.remove([('rack', '=', line.medicine_rack.id)])
+                #         entry_stock_ids = self.env['entry.stock'].search(domain, order='id desc')
+                if not entry_stock_ids or sum(entry_stock_ids.mapped('qty')) <= 0:
+                    raise Warning(
+                        _('Only we have %s Products with current combination in stock') % line.stock_entry_qty)
 
                 quantity = line.quantity
                 for stock in entry_stock_ids:
@@ -662,7 +666,7 @@ class InvoiceStockMove(models.Model):
                             'qty': stock.qty - line.quantity,
                         })
                     quantity -= stock.qty
-
+                line.stock_entry_qty = line.quantity
         # obj = self.env['entry.stock'].search([('rack', '=', line.medicine_rack.id)])
         #
         #         for lines in obj:
