@@ -445,13 +445,24 @@ class AccountInvoiceLine(models.Model):
     amt_w_tax = fields.Float('Total',compute="_compute_customer_tax")
     doctor_name = fields.Many2one('res.partner','Doctor Name')
     address_new = fields.Text('Address')
+    product_id = fields.Many2one('product.product','Medicine')
 
+    @api.onchange('product_id')
+    def product_id_change_new(self):
+        rack_ids = []
+        stock = self.env['entry.stock'].search([('medicine_1','=',self.product_id.id)])
+        for rec in stock:
+            rack_ids.append(rec.rack.id)
+        print("racks are",rack_ids)
 
-
+        # for rec in self:
+        return {'domain': {'medicine_rack': [('id', '=', rack_ids)]}}
     @api.onchange('medicine_name_subcat')
     def onchange_potency_id(self):
         for rec in self:
             return {'domain': {'medicine_grp': [('medicine_name_subcat1', '=', rec.medicine_name_subcat.id)]}}
+
+
 
     # @api.onchange('batch_2')
     # def onchange_batch_id(self):
