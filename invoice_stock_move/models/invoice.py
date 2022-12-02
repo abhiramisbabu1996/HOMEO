@@ -450,11 +450,12 @@ class AccountInvoiceLine(models.Model):
 
     @api.onchange('product_id')
     def product_id_change_new(self):
+        self.name = self.product_id.name
         rack_ids = []
         stock = self.env['entry.stock'].search([('medicine_1','=',self.product_id.id)])
         for rec in stock:
             rack_ids.append(rec.rack.id)
-        print("racks are",rack_ids)
+        print("racks are", rack_ids)
 
         # for rec in self:
         return {'domain': {'medicine_rack': [('id', '=', rack_ids)]}}
@@ -574,6 +575,7 @@ class InvoiceStockMove(models.Model):
     seq = fields.Integer()
     holding_invoice = fields.Boolean()
     packing_slip = fields.Boolean()
+    packing_slip_new = fields.Boolean()
 
     @api.multi
     def invoice_print(self):
@@ -597,11 +599,14 @@ class InvoiceStockMove(models.Model):
     @api.multi
     def move_to_picking_slip(self):
         for record in self:
+            record.action_stock_transfer()
             record.packing_slip = True
-            record.action_date_assign()
-            record.action_move_create()
-            record.action_number()
-            record.invoice_validate()
+            record.packing_slip_new = True
+
+            # record.action_date_assign()
+            # record.action_move_create()
+            # record.action_number()
+            # record.invoice_validate()
             record.state = 'packing_slip'
             record.number2 = self.env['ir.sequence'].next_by_code('packing.slip.invoice')
         return
@@ -609,10 +614,10 @@ class InvoiceStockMove(models.Model):
     @api.multi
     def import_to_invoice(self):
         for record in self:
-            if record.state == 'packing_slip':
-                record.state = 'open'
-            else:
-                record.state = 'draft'
+            # if record.state == 'packing_slip':
+            #     record.state = 'open'
+            # else:
+            record.state = 'draft'
             record.packing_slip = False
             record.holding_invoice = False
             record.number2 = self.env['ir.sequence'].next_by_code('customer.account.invoice')
@@ -671,26 +676,28 @@ class InvoiceStockMove(models.Model):
 
         if result.packing_slip:
             result.number2 = self.env['ir.sequence'].next_by_code('packing.slip.invoice')
-            result.action_date_assign()
-            result.action_move_create()
-            result.action_number()
-            result.invoice_validate()
             result.state = 'packing_slip'
+            result.packing_slip_new = True
 
         if result.holding_invoice:
             result.number2 = self.env['ir.sequence'].next_by_code('holding.invoice')
             result.holding_invoice = True
             result.state = 'holding_invoice'
-
         return result
 
     @api.multi
     def write(self, vals):
         if 'internal_number' in vals:
             vals['internal_number'] = self.number2
-            vals['number'] = self.number2
+            vals['name'] = self.number2
         return super(InvoiceStockMove, self).write(vals)
-            
+    
+    @api.multi
+    def unlink(self, cr, uid, ids, context=None):
+        for record in self:
+            if record.state not in ['draft', 'holding_invoice', 'packing_slip']:
+                raise Warning("Only Draft Invoice can be deleted")
+        return super(InvoiceStockMove, self).unlink()
     #         # if self.duplicate:
     #         #     vals['internal_number'] = self.number2
     #         #     vals['number2'] = self.number2
