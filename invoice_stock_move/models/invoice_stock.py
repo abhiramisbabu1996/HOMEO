@@ -391,7 +391,7 @@ class InvoiceLine(models.Model):
                     if rec.stock_entry_id:
                         rec.stock_entry_id.unlink()
                 if rec.invoice_id.type == 'out_invoice':
-                    if rec.packing_slip:
+                    if rec.invoice_id.packing_slip:
                         if rec.stock_entry_qty:
                             domain = []
                             if rec.product_id:
