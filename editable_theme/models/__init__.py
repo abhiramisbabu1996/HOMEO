@@ -1,2 +1,0 @@
-import res_config_settings
-import controller
