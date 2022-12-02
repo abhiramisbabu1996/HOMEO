@@ -384,7 +384,7 @@ class InvoiceLine(models.Model):
         return res
 
     @api.multi
-    def unlink(self):
+    def unlink(self, cr, uid, ids, context=None):
         for rec in self:
             if rec.invoice_id.state in ['draft', 'holding_invoice', 'packing_slip']:
                 if rec.invoice_id.type == 'in_invoice':
@@ -419,7 +419,7 @@ class InvoiceLine(models.Model):
                             })
             else:
                 raise Warning("Only Draft Invoice Lines can be deleted")
-        return super(InvoiceLine, self).unlink()
+        return super(InvoiceLine, self).unlink(cr, uid, ids, context=context)
 
 
 # UPDATE TAX BUTTON
