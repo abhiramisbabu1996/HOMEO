@@ -15,6 +15,8 @@ class AccountInvoice(models.Model):
     b2c = fields.Boolean("B2C", default=True)
     bill_nature = fields.Selection([('gst', 'GST'), ('igst', 'IGST')], default='gst', compute='compute_bill')
     doctor_name = fields.Many2one('res.partner', 'Doctor Name')
+    doctor_name_1 = fields.Char('Doctor Name')
+
     res_person = fields.Many2one('res.partner', string="Responsible Person")
     address_new = fields.Text('Address', related="partner_id.address_new")
     financial_year = fields.Many2one('account.fiscalyear', 'Financial Year', default=get_year)

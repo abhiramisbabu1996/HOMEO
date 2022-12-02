@@ -444,6 +444,7 @@ class AccountInvoiceLine(models.Model):
     amt_tax = fields.Float('Tax_amt')
     amt_w_tax = fields.Float('Total',compute="_compute_customer_tax")
     doctor_name = fields.Many2one('res.partner','Doctor Name')
+    doctor_name_1 = fields.Char('Doctor Name')
     address_new = fields.Text('Address')
     product_id = fields.Many2one('product.product','Medicine')
 

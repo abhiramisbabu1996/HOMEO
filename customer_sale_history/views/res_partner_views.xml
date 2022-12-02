@@ -71,7 +71,7 @@
 
                     </xpath>
                     <xpath expr="//field[@name='journal_id']" position="after">
-                        <field name="doctor_name" style="width:50%%"/>
+                        <field name="doctor_name_1" style="width:20%%"/>
                         <field name="financial_year" placeholder="Financial Year" style="width:50%%" />
 
                         <field name="b2c" invisible="1"/>
