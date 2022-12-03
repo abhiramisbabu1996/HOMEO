@@ -450,50 +450,42 @@ class AccountInvoiceLine(models.Model):
     address_new = fields.Text('Address')
     product_id = fields.Many2one('product.product', 'Medicine')
     
-    # price_subtotal = fields.Float(string='Amount', digits=dp.get_precision('Account'),
-    #     store=True, readonly=True, compute='_compute_price', inverse='_inverse_compute_price')
-    # discount = fields.Float(string='Discount (%)', digits= dp.get_precision('Discount'),
-    #     default=0.0, compute="_inverse_compute_price", readonly=False)
-    #
-    # def _inverse_compute_price(self):
-    #     for rec in self:
-    #         if rec.quantity * rec.price_unit > 0:
-    #             new_rate = rec.price_subtotal
-    #             percentage = (new_rate * 100)/(rec.quantity * rec.price_unit)
-    #             rec.discount = percentage
-    #
-    # @api.onchange('price_subtotal')
-    # def onchange_price_subtotal(self):
-    #     for rec in self:
-    #         if rec.quantity * rec.price_unit > 0:
-    #             new_rate = rec.price_subtotal
-    #             percentage = (new_rate * 100) / (rec.quantity * rec.price_unit)
-    #             rec.discount = percentage
-    #
-    # @api.one
-    # @api.depends('price_unit', 'discount', 'invoice_line_tax_id', 'quantity',
-    #     'product_id', 'invoice_id.partner_id', 'invoice_id.currency_id')
-    # def _compute_price(self):
-    #     price = self.price_unit * (1 - (self.discount or 0.0) / 100.0)
-    #     taxes = self.invoice_line_tax_id.compute_all(price, self.quantity, product=self.product_id, partner=self.invoice_id.partner_id)
-    #     self.price_subtotal = taxes['total']
-    #     if self.invoice_id:
-    #         self.price_subtotal = self.invoice_id.currency_id.round(self.price_subtotal)
+    price_subtotal = fields.Float(string='Amount', digits=dp.get_precision('Account'),
+        store=True, readonly=True, compute='_compute_price', inverse='_inverse_compute_price')
+
+    def _inverse_compute_price(self):
+        for rec in self:
+            if rec.quantity * rec.price_unit> 0:
+                discount_amount = (rec.quantity * rec.price_unit) - rec.price_subtotal
+                percentage = (discount_amount * 100)/(rec.quantity * rec.price_unit)
+                rec.discount = percentage
+                rec.new_disc = percentage
+
+    @api.onchange('price_subtotal')
+    def onchange_price_subtotal(self):
+        for rec in self:
+            if rec.quantity * rec.price_unit> 0:
+                discount_amount = (rec.quantity * rec.price_unit) - rec.price_subtotal
+                percentage = (discount_amount * 100)/(rec.quantity * rec.price_unit)
+                rec.discount = percentage
+                rec.new_disc = percentage
+
 
 
     # @api.onchange('product_id')
 
-    # @api.onchange('product_id')
-    # def product_id_change_new(self):
-    #     self.name = self.product_id.name
-    #     rack_ids = []
-    #     stock = self.env['entry.stock'].search([('medicine_1','=',self.product_id.id)])
-    #     for rec in stock:
-    #         rack_ids.append(rec.rack.id)
-    #     print("racks are", rack_ids)
+    @api.onchange('product_id')
+    def product_id_change_new(self):
+        self.name = self.product_id.name
+        rack_ids = []
+        stock = self.env['entry.stock'].search([('medicine_1','=',self.product_id.id)])
+        for rec in stock:
+            rack_ids.append(rec.rack.id)
+        print("racks are", rack_ids)
 
-        # for rec in self:
-        # return {'domain': {'medicine_rack': [('id', '=', rack_ids)]}}
+        for rec in self:
+            return {'domain': {'medicine_rack': [('id', '=', rack_ids)]}}
+
     @api.onchange('medicine_name_subcat')
     def onchange_potency_id(self):
         for rec in self:
