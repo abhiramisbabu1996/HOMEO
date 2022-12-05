@@ -58,7 +58,7 @@
 <!--            </xpath>-->
 
             <xpath expr="//field[@name='price_subtotal']" position="after">
-                    <field name="rate_amtc"/>
+<!--                    <field name="rate_amtc"/>-->
                     <field name="invoice_line_tax_id4"/>
 
 
