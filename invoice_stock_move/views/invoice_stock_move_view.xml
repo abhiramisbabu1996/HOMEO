@@ -68,7 +68,7 @@
 
                 </xpath>
                 <xpath expr="//field[@name='amount_amount']" position="after">
-                    <field name="amt_tax"/>
+<!--                    <field name="amt_tax"/>-->
                     <field name="amt_w_tax"/>
                     <field name="amount_amount1" invisible="1"/>
                     <field name="amount_w_tax" invisible="1"/>
@@ -107,7 +107,7 @@
 
                 </xpath>
                 <xpath expr="//field[@name='amount_amount']" position="after">
-                    <field name="amount_amount1"/>
+<!--                    <field name="amount_amount1"/>-->
                     <field name="amount_w_tax"/>
                     <field name="grand_total" invisible="1"/>
                 </xpath>

@@ -1,12 +1,12 @@
 # from odoo.exceptions import UserError
 # from odoo import models, fields, api, _
 # from odoo.tools.safe_eval import safe_eval
-from openerp.exceptions import Warning as UserError
+# from openerp.exceptions import Warning as UserError
 from openerp import models, fields, api, _
 from openerp.osv import osv
 from openerp.tools import safe_eval
 from openerp.exceptions import except_orm
-from openerp.exceptions import Warning as UserError
+# from openerp.exceptions import Warning as UserError
 
 
 class MedicineTypes(models.Model):
@@ -105,7 +105,7 @@ class NewStockEntry(models.Model):
                     'batch_2': rec.batch_2.id,
                     'hsn_code': rec.hsn_code,
                     'price_unit': rec.mrp,
-                    'discount': rec.discount,
+                    'discount': cus_invoice.discount_rate or 0,
                     'manf_date': rec.manf_date,
                     'expiry_date': rec.expiry_date,
                     'medicine_rack': rec.rack.id,
@@ -288,7 +288,8 @@ class InvoiceLine(models.Model):
             # if vals.get('packing_slip') or self.state not in ['draft', 'holding_invoice']:
             if vals.get('packing_slip') or self.invoice_id.state == 'packing_slip':
                 if ('product_id', 'expiry_date', 'medicine_rack', 'product_of', 'medicine_grp', 'medicine_name_packing', 'medicine_name_subcat', 'quantity', 'hsn_code') in vals:
-                    domain = []
+
+                    domain = [('qty', '>', 0)]
 
                     if vals.get('product_id'):
                         domain += [('medicine_1', '=', vals.get('product_id'))]
@@ -344,7 +345,7 @@ class InvoiceLine(models.Model):
                             entry_stock_ids = self.env['entry.stock'].search(domain, order='id desc')
                     if not entry_stock_ids or sum(entry_stock_ids.mapped('qty')) <= 0:
                         raise Warning(
-                            _('Only we have %s Products with current combination in stock') % int(self.stock_entry_qty)+int(sum(entry_stock_ids.mapped('qty'))))
+                            _('Only we have %s Products with current combination in stock') % str(int(self.stock_entry_qty)+int(sum(entry_stock_ids.mapped('qty')))))
                     quantity = vals.get('quantity') or self.quantity
 
 
@@ -640,7 +641,7 @@ class InvoiceStockMove(models.Model):
                         'date': self.date_invoice})
                     line.stock_transfer_id = stock_transfer_id.id
 
-                    domain = []
+                    domain = [('qty', '>', 0)]
                     if line.product_id:
                         domain += [('medicine_1', '=', line.product_id.id)]
                     if line.expiry_date:
@@ -663,7 +664,7 @@ class InvoiceStockMove(models.Model):
                     #         entry_stock_ids = self.env['entry.stock'].search(domain, order='id desc')
                     if not entry_stock_ids or sum(entry_stock_ids.mapped('qty')) <= 0:
                         raise Warning(
-                            _('Only we have %s Products with current combination in stock') % int(line.stock_entry_qty)+int(sum(entry_stock_ids.mapped('qty'))))
+                            _('Only we have %s Products with current combination in stock') % str(int(line.stock_entry_qty)+int(sum(entry_stock_ids.mapped('qty')))))
 
                     quantity = line.quantity
                     for stock in entry_stock_ids:
@@ -792,7 +793,7 @@ class SupplierInvoiceLineTax(models.Model):
     amount_amount = fields.Float('TAX_AMOUNT')
     amount_amount1 = fields.Float('Tax_amt', )
     # amount_w_tax = fields.Float('TOTAL_AMT', compute="_compute_amount_with_tax")
-    amount_w_tax = fields.Float('Total_amt')
+    amount_w_tax = fields.Float('Total')
 
     # @api.onchange('product_id')
     # def get_pack_details(self):
@@ -1054,7 +1055,7 @@ class PartnerPayment(models.Model):
                                          ])
                 rec.invoice_ids = list
                 print ('onchange')
-                print list
+                print(list)
 
     @api.depends('res_person_id', 'partner_id')
     def generate_lines(self):
@@ -1093,7 +1094,7 @@ class PartnerPayment(models.Model):
                 rec.invoice_ids = list
                 print ('depends')
 
-                print list
+                print (list)
 
     @api.onchange('invoice_ids')
     def onchange_compute(self):

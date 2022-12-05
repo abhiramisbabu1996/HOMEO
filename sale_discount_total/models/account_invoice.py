@@ -8,7 +8,7 @@ from openerp.tools.translate import _
 class AccountInvoiceLine(models.Model):
     _inherit = "account.invoice.line"
 
-    discount = fields.Float(string='Dis1(%)',
+    discount = fields.Float(string='Discount',
                             # digits=(16, 10),
                             # digits= dp.get_precision('Discount'),
                             default=0.0,
@@ -99,7 +99,7 @@ class AccountInvoice(models.Model):
             test3 =0
             for inv in self:
                 for line in inv.invoice_line:
-                    print line.discount
+                    print (line.discount)
                     disc += (line.quantity * line.price_unit) * line.discount / 100
                     test += line.grand_total
                     test3 = test3+line.rate_amt
@@ -109,7 +109,7 @@ class AccountInvoice(models.Model):
             self.amount_untaxed = test2
             self.amount_tax = tax_total
             total_d = test2 - test3
-            self.amount_discount = total_d
+            self.amount_discount = round(total_d)
             # self.amount_total = ((test2 -total_d) + tax_total)
             self.amount_total = test
         if self.partner_id.customer == True:
@@ -121,7 +121,7 @@ class AccountInvoice(models.Model):
             test3 = 0
             for inv in self:
                 for line in inv.invoice_line:
-                    print line.discount
+                    print (line.discount)
                     disc += (line.quantity * line.price_unit) * line.discount / 100
                     test += line.amt_w_tax
                     test3 = test3 + line.amt_w_tax
@@ -133,25 +133,30 @@ class AccountInvoice(models.Model):
             total_d = test2 - (test3-tax_total)
             self.amount_discount = total_d
             # self.amount_total = ((test2 -total_d) + tax_total)
-            self.amount_total = test
+            self.amount_total = round(test)
 
 
     discount_category = fields.Many2one('cus.discount','Discount Category')
     discount_type = fields.Selection([('percent', 'Percentage'), ('amount', 'Amount'),],default='percent', string='Discount Type', readonly=True,
                                      states={'draft': [('readonly', False)]},)
-    discount_rate = fields.Float('Discount Rate', compute='compute_discount_rate',
+    discount_rate = fields.Float('Discount Rate',
                                  digits_compute=dp.get_precision('Account'),
                                  readonly=True,
                                  states={'draft': [('readonly', False)]},)
+    # discount_rate = fields.Float('Discount Rate', compute='compute_discount_rate',
+    #                              digits_compute=dp.get_precision('Account'),
+    #                              readonly=True,
+    #                              states={'draft': [('readonly', False)]},)
     amount_discount = fields.Float(string='Discount',
                                    digits=dp.get_precision('Account'),
-                                   readonly=True, compute='_compute_amount')
+                                   readonly=True, compute='_compute_amount',store=True)
     amount_untaxed = fields.Float(string='Subtotal', digits=dp.get_precision('Account'),
                                   readonly=True, compute='_compute_amount', track_visibility='always')
     amount_tax = fields.Float(string='Tax', digits=dp.get_precision('Account'),
                               readonly=True, compute='_compute_amount')
     amount_total = fields.Float(string='Total', digits=dp.get_precision('Account'),
                                 readonly=True, compute='_compute_amount')
+
 
 
     @api.onchange('discount_category')
@@ -167,8 +172,8 @@ class AccountInvoice(models.Model):
         for rec in self:
             if rec.type != 'in_invoice':
                 rec.discount_rate = rec.discount_category.percentage
-                for line in rec.invoice_line:
-                    line.discount = rec.discount_category.percentage
+                # for line in rec.invoice_line:
+                #     line.discount = rec.discount_category.percentage
 
     @api.multi
     def compute_discount(self, discount):

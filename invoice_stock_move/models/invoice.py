@@ -160,6 +160,38 @@ class AccountInvoiceLine(models.Model):
                 discount_rate = self.invoice_id.discount_rate
                 self.discount = discount_rate
 
+    # @api.onchange('invoice_id.discount_category')
+    # def discount_category_onchange_line(self):
+    #     for rec in self:
+    #         rec.discount = rec.invoice_id.percentage
+
+    @api.model
+    def move_line_get_item(self, line):
+        total_price = 0
+        if line.invoice_id.type == 'out_invoice':
+            # total_price = line.amt_w_tax
+            total_price = round(line.price_subtotal+(line.price_subtotal * (line.invoice_line_tax_id4/100)))
+        if line.invoice_id.type != 'out_invoice':
+            # total_price = line.amount_w_tax
+            discount = line.quantity*line.price_unit*(line.discount/100)
+            amount = line.quantity*line.price_unit - discount
+            tax_amount = amount*(line.invoice_line_tax_id4/100)
+            total_price = round(tax_amount + line.rate_amt)
+
+        return {
+            'type': 'src',
+            'name': line.name.split('\n')[0][:64],
+            'price_unit': line.price_unit,
+            'quantity': line.quantity,
+            'price':  total_price,
+            'account_id': line.account_id.id,
+            'product_id': line.product_id.id,
+            'uos_id': line.uos_id.id,
+            'account_analytic_id': line.account_analytic_id.id,
+            'taxes': line.invoice_line_tax_id,
+        }
+
+
 
     # CUSTOMER TAX CALCULATION
     @api.model
@@ -685,6 +717,8 @@ class InvoiceStockMove(models.Model):
                     credit_amount = partner_id.limit_amt
                     used = partner_id.used_credit_amt
                     bal = credit_amount - used
+                    # amount_total = sum(filter(lambda x: x['account'] == order.product_id.categ_id.name, list[a]['account_list']))
+                    
                     if bal < vals.get('amount_total'):
                         print("Credit Amount is over")
                         raise Warning(_('This Customers Credit Limit Amount Rs. '+str(credit_amount)+'  has been Crossed.'+"\n" 'Check  '+result.partner_id.name+'s'+ ' Credit Limits'))
@@ -718,6 +752,29 @@ class InvoiceStockMove(models.Model):
             vals['internal_number'] = self.number2
             vals['name'] = self.number2
         return super(InvoiceStockMove, self).write(vals)
+
+
+    # @api.model
+    # def line_get_convert(self, line, part, date):
+    #     return {
+    #         'date_maturity': line.get('date_maturity', False),
+    #         'partner_id': part,
+    #         'name': line['name'][:64],
+    #         'date': date,
+    #         'debit': line['price']>0 and line['price'],
+    #         'credit': line['price']<0 and -line['price'],
+    #         'account_id': line['account_id'],
+    #         'analytic_lines': line.get('analytic_lines', []),
+    #         'amount_currency': line['price']>0 and abs(line.get('amount_currency', False)) or -abs(line.get('amount_currency', False)),
+    #         'currency_id': line.get('currency_id', False),
+    #         'tax_code_id': line.get('tax_code_id', False),
+    #         'tax_amount': line.get('tax_amount', False),
+    #         'ref': line.get('ref', False),
+    #         'quantity': line.get('quantity',1.00),
+    #         'product_id': line.get('product_id', False),
+    #         'product_uom_id': line.get('uos_id', False),
+    #         'analytic_account_id': line.get('account_analytic_id', False),
+    #     }
     
     @api.multi
     def unlink(self):
