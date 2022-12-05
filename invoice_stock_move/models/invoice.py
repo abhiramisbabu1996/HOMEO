@@ -720,7 +720,7 @@ class InvoiceStockMove(models.Model):
         return super(InvoiceStockMove, self).write(vals)
     
     @api.multi
-    def unlink(self, cr, uid, ids, context=None):
+    def unlink(self):
         for record in self:
             if record.state not in ['draft', 'holding_invoice', 'packing_slip']:
                 raise Warning("Only Draft Invoice can be deleted")
