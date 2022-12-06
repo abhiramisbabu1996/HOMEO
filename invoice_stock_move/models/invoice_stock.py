@@ -6,7 +6,7 @@ from openerp import models, fields, api, _
 from openerp.osv import osv
 from openerp.tools import safe_eval
 from openerp.exceptions import except_orm
-# from openerp.exceptions import Warning as UserError
+from openerp.exceptions import except_orm, Warning, RedirectWarning
 
 
 class MedicineTypes(models.Model):
@@ -52,6 +52,7 @@ class MeDRacks(models.Model):
 class NewStockEntry(models.Model):
     _name = 'entry.stock'
     _rec_name = 's_no'
+    _order = 'id desc'
 
     expiry_date = fields.Date(string='Expiry Date')
     manf_date = fields.Date(string='Manufacturing Date')
@@ -288,9 +289,12 @@ class InvoiceLine(models.Model):
             # if vals.get('packing_slip') or self.state not in ['draft', 'holding_invoice']:
             if vals.get('packing_slip') or self.invoice_id.state == 'packing_slip':
                 if ('product_id', 'expiry_date', 'medicine_rack', 'product_of', 'medicine_grp', 'medicine_name_packing', 'medicine_name_subcat', 'quantity', 'hsn_code') in vals:
+                    if vals.get('quantity'):
+                        quantity = vals.get('quantity')
+                    else:
+                        quantity = self.quantity
 
-                    domain = [('qty', '>', 0)]
-
+                    domain = [('qty', '>=',quantity)]
                     if vals.get('product_id'):
                         domain += [('medicine_1', '=', vals.get('product_id'))]
                     else:
@@ -338,30 +342,40 @@ class InvoiceLine(models.Model):
                     else:
                         if self.hsn_code:
                             domain += [('hsn_code', '=', self.hsn_code)]
-                    entry_stock_ids = self.env['entry.stock'].search(domain, order='id desc')
-                    if not entry_stock_ids or sum(entry_stock_ids.mapped('qty')):
+                    # domain += [('qty', '=', 0)]
+                    entry_stock_ids = self.env['entry.stock'].search(domain, order='id asc', limit=1)
+                    if sum(entry_stock_ids.mapped('qty')) <= 0 or not entry_stock_ids:
+                        if vals.get('medicine_rack'):
+                            domain.remove(('rack', '=', vals.get('medicine_rack')))
                         if self.medicine_rack:
-                            domain -= [('rack', '=', self.medicine_rack.id)]
-                            entry_stock_ids = self.env['entry.stock'].search(domain, order='id desc')
-                    if not entry_stock_ids or sum(entry_stock_ids.mapped('qty')) <= 0:
+                            domain.remove(('rack', '=', self.medicine_rack.id))
+                        if self.expiry_date:
+                            domain.remove(('expiry_date', '=', self.expiry_date))
+                        if vals.get('expiry_date'):
+                            domain.remove(('expiry_date', '=', vals.get('expiry_date')))
+                        entry_stock_ids = self.env['entry.stock'].search(domain, order='id asc')
+                    if not entry_stock_ids:
+                        domain.remove(('qty', '>=',quantity))
+                        domain += [('qty', '>=', 0)]
+                        entry_stock_ids = self.env['entry.stock'].search(domain, order='id asc')
+
+                    if sum(entry_stock_ids.mapped('qty')) <= 0 or not entry_stock_ids:
                         raise Warning(
                             _('Only we have %s Products with current combination in stock') % str(int(self.stock_entry_qty)+int(sum(entry_stock_ids.mapped('qty')))))
-                    quantity = vals.get('quantity') or self.quantity
-
-
+                    quantity_comp = quantity
                     for stock in entry_stock_ids:
-                        # if quantity > 0:
-                        if stock.qty >= quantity:
-                            stock.write({
-                                'qty': stock.qty - quantity,
-                            })
-                            # quantity -= stock.qty
-                            break
-                        else:
-                            stock.write({
-                                'qty': 0
-                            })
-                        quantity -= stock.qty
+                        if quantity_comp > 0:
+                            if stock.qty >= quantity_comp:
+                                stock.write({
+                                    'qty': stock.qty - quantity_comp,
+                                })
+                                # quantity -= stock.qty
+                                break
+                            else:
+                                quantity_comp -= stock.qty
+                                stock.write({
+                                    'qty': 0
+                                })
                     vals['stock_entry_qty'] = quantity
         res = super(InvoiceLine, self).write(vals)
         if self.invoice_id.type == 'in_invoice':
@@ -641,13 +655,13 @@ class InvoiceStockMove(models.Model):
                         'date': self.date_invoice})
                     line.stock_transfer_id = stock_transfer_id.id
 
-                    domain = [('qty', '>', 0)]
+                    domain = [('qty', '>=', line.quantity)]
                     if line.product_id:
                         domain += [('medicine_1', '=', line.product_id.id)]
                     if line.expiry_date:
                         domain += [('expiry_date', '=', line.expiry_date)]
-                    # if line.medicine_rack:
-                    #     domain += [('rack', '=', line.medicine_rack.id)]
+                    if line.medicine_rack:
+                        domain += [('rack', '=', line.medicine_rack.id)]
                     if line.product_of:
                         domain += [('company', '=', line.product_of.id)]
                     if line.medicine_grp:
@@ -657,11 +671,18 @@ class InvoiceStockMove(models.Model):
                     if line.medicine_name_subcat:
                         domain += [('potency', '=', line.medicine_name_subcat.id)]
 
-                    entry_stock_ids = self.env['entry.stock'].search(domain, order='id desc')
-                    # if not entry_stock_ids or sum(entry_stock_ids.mapped('qty')):
-                    #     if line.medicine_rack:
-                    #         domain.remove([('rack', '=', line.medicine_rack.id)])
-                    #         entry_stock_ids = self.env['entry.stock'].search(domain, order='id desc')
+                    entry_stock_ids = self.env['entry.stock'].search(domain, order='id asc')
+                    if sum(entry_stock_ids.mapped('qty')) <= 0 or not entry_stock_ids:
+                        if line.medicine_rack:
+                            domain.remove(('rack', '=', line.medicine_rack.id))
+                        if line.expiry_date:
+                            domain.remove(('expiry_date', '=', line.expiry_date))
+                        entry_stock_ids = self.env['entry.stock'].search(domain, order='id asc')
+                    if not entry_stock_ids:
+                        domain.remove(('qty', '>=', line.quantity))
+                        domain += [('qty', '>=', 0)]
+                        entry_stock_ids = self.env['entry.stock'].search(domain, order='id asc')
+
                     if not entry_stock_ids or sum(entry_stock_ids.mapped('qty')) <= 0:
                         raise Warning(
                             _('Only we have %s Products with current combination in stock') % str(int(line.stock_entry_qty)+int(sum(entry_stock_ids.mapped('qty')))))
@@ -676,10 +697,11 @@ class InvoiceStockMove(models.Model):
                             # quantity -= stock.qty
                             break
                         else:
+                            quantity -= stock.qty
                             stock.write({
-                                'qty': stock.qty - line.quantity,
+                                'qty': 0,
                             })
-                        quantity -= stock.qty
+
                     line.stock_entry_qty = line.quantity
             # obj = self.env['entry.stock'].search([('rack', '=', line.medicine_rack.id)])
             #

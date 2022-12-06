@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 from datetime import timedelta
 import openerp.addons.decimal_precision as dp
+from openerp.exceptions import except_orm, Warning, RedirectWarning
 
 
 # import models
@@ -174,7 +175,7 @@ class AccountInvoiceLine(models.Model):
         if line.invoice_id.type != 'out_invoice':
             # total_price = line.amount_w_tax
             discount = line.quantity*line.price_unit*(line.discount/100)
-            amount = line.quantity*line.price_unit - discount
+            amount = (line.quantity*line.price_unit) - discount
             tax_amount = amount*(line.invoice_line_tax_id4/100)
             total_price = round(tax_amount + line.rate_amt)
 
@@ -191,7 +192,28 @@ class AccountInvoiceLine(models.Model):
             'taxes': line.invoice_line_tax_id,
         }
 
-
+    # @api.model
+    # def move_line_get(self, invoice_id):
+    #     res = []
+    #     self._cr.execute(
+    #         'SELECT * FROM account_invoice_tax WHERE invoice_id = %s',
+    #         (invoice_id,)
+    #     )
+    #     for row in self._cr.dictfetchall():
+    #         if not (row['amount'] or row['tax_code_id'] or row['tax_amount']):
+    #             continue
+    #         res.append({
+    #             'type': 'tax',
+    #             'name': row['name'],
+    #             'price_unit': row['amount'],
+    #             'quantity': 1,
+    #             'price': row['amount'] or 0.0,
+    #             'account_id': row['account_id'],
+    #             'tax_code_id': row['tax_code_id'],
+    #             'tax_amount': row['tax_amount'],
+    #             'account_analytic_id': row['account_analytic_id'],
+    #         })
+    #     return res
 
     # CUSTOMER TAX CALCULATION
     @api.model
@@ -465,7 +487,7 @@ class AccountInvoiceLine(models.Model):
     hsn_code = fields.Char('Hsn')
     invoice_line_tax_id3 = fields.Many2one('tax.combo', string='Gst')
     invoice_line_tax_id4 = fields.Float(string='Tax')
-    rack_qty = fields.Float(string="stock")
+    rack_qty = fields.Float(string="stock", compute='compute_stock_qty')
     rate_amt = fields.Float(string="Rate")
     rate_amtc = fields.Float(string="N-rate")
     dis1 = fields.Float('discount 1')
@@ -506,17 +528,51 @@ class AccountInvoiceLine(models.Model):
 
     # @api.onchange('product_id')
 
-    @api.onchange('product_id')
+    @api.onchange('medicine_grp')
     def product_id_change_new(self):
-        self.name = self.product_id.name
-        rack_ids = []
-        stock = self.env['entry.stock'].search([('medicine_1','=',self.product_id.id)])
-        for rec in stock:
-            rack_ids.append(rec.rack.id)
-        print("racks are", rack_ids)
-
         for rec in self:
+            domain = []
+            if rec.product_id:
+                domain += [('medicine_1', '=', rec.product_id.id)]
+            # if rec.expiry_date:
+            #     domain += [('expiry_date', '=', result.expiry_date)]
+
+            if rec.product_of:
+                domain += [('company', '=', rec.product_of.id)]
+            if rec.medicine_grp:
+                domain += [('medicine_grp1', '=', rec.medicine_grp.id)]
+            if rec.medicine_name_packing:
+                domain += [('medicine_name_packing', '=', rec.medicine_name_packing.id)]
+            if rec.medicine_name_subcat:
+                domain += [('potency', '=', rec.medicine_name_subcat.id)]
+            rec.name = rec.product_id.name
+            rack_ids = []
+            stock = self.env['entry.stock'].search(domain)
+            for rec in stock:
+                rack_ids.append(rec.rack.id)
+            print("racks are", rack_ids)
+
             return {'domain': {'medicine_rack': [('id', '=', rack_ids)]}}
+
+    @api.depends('medicine_rack')
+    def compute_stock_qty(self):
+        for rec in self:
+            if rec.medicine_rack:
+                domain = [('rack', '=', rec.medicine_rack.id)]
+                if rec.product_id:
+                    domain += [('medicine_1', '=', rec.product_id.id)]
+                # if rec.expiry_date:
+                #     domain += [('expiry_date', '=', result.expiry_date)]
+                if rec.product_of:
+                    domain += [('company', '=', rec.product_of.id)]
+                if rec.medicine_grp:
+                    domain += [('medicine_grp1', '=', rec.medicine_grp.id)]
+                if rec.medicine_name_packing:
+                    domain += [('medicine_name_packing', '=', rec.medicine_name_packing.id)]
+                if rec.medicine_name_subcat:
+                    domain += [('potency', '=', rec.medicine_name_subcat.id)]
+                stock_id = self.env['entry.stock'].search(domain,limit=1)
+                rec.rack_qty=stock_id.qty
 
     @api.onchange('medicine_name_subcat')
     def onchange_potency_id(self):
@@ -707,21 +763,34 @@ class InvoiceStockMove(models.Model):
             'res_id': res_id,
             'context': context,
         }
+    @api.onchange('invoice_line')
+    def onchange_credit_limit_checking(self):
+        for rec in self:
+            if rec.partner_id.customer:
+                if rec.pay_mode == 'credit':
+                    credit_amount = rec.partner_id.limit_amt
+                    used = rec.partner_id.used_credit_amt
+                    bal = credit_amount - used
+                    if (bal <= 0) or (bal < rec.amount_total):
+                        print("Credit Amount is over")
+                        # raise except_orm(_('No Analytic Journal!'),
+                        #                  _("You must define an analytic journal of type '%s'!") % (journal_type,))
+                        raise except_orm(_('Credit Limit Exceeded!'),('This Customers Credit Limit Amount Rs. '+str(credit_amount)+'  has been Crossed.'+"\n" 'Check  '+rec.partner_id.name+'s'+ ' Credit Limits'))
 
     @api.model
     def create(self, vals):
-        if vals.get('partner_id'):
-            partner_id = self.env['res.partner'].browse(vals.get('partner_id'))
-            if partner_id.customer == True:
-                if vals.get('pay_mode') == 'credit':
-                    credit_amount = partner_id.limit_amt
-                    used = partner_id.used_credit_amt
-                    bal = credit_amount - used
-                    # amount_total = sum(filter(lambda x: x['account'] == order.product_id.categ_id.name, list[a]['account_list']))
-                    
-                    if bal < vals.get('amount_total'):
-                        print("Credit Amount is over")
-                        raise Warning(_('This Customers Credit Limit Amount Rs. '+str(credit_amount)+'  has been Crossed.'+"\n" 'Check  '+result.partner_id.name+'s'+ ' Credit Limits'))
+        # if vals.get('partner_id'):
+        #     partner_id = self.env['res.partner'].browse(vals.get('partner_id'))
+        #     if partner_id.customer == True:
+        #         if vals.get('pay_mode') == 'credit':
+        #             credit_amount = partner_id.limit_amt
+        #             used = partner_id.used_credit_amt
+        #             bal = credit_amount - used
+        #             # amount_total = sum(filter(lambda x: x['account'] == order.product_id.categ_id.name, list[a]['account_list']))
+        #
+        #             if bal < vals.get('amount_total'):
+        #                 print("Credit Amount is over")
+        #                 raise Warning(_('This Customers Credit Limit Amount Rs. '+str(credit_amount)+'  has been Crossed.'+"\n" 'Check  '+result.partner_id.name+'s'+ ' Credit Limits'))
 
         if 'duplicate' in self._context:
             if self._context['duplicate']:
