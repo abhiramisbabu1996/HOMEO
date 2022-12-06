@@ -94,7 +94,32 @@
                 <xpath expr="//button[@name='invoice_open']" position="after">
                     <button name="invoice_print" string="Print Invoice" type="object" class="oe_highlight" attrs="{'invisible':[('type','!=','in_invoice')]}" />
                 </xpath>
+<!--                                   <xpath expr="//page[1]/group" position="replace">-->
 
+
+<!--                                            <group class="oe_subtotal_footer oe_right">-->
+<!--                                <field name="amount_untaxed" widget="monetary" options="{'currency_field': 'currency_id'}"/>-->
+<!--                                <div>-->
+<!--                                    <label for="amount_tax_custom"/>-->
+<!--&lt;!&ndash;                                    <button name="button_reset_taxes" states="draft,proforma2"&ndash;&gt;-->
+<!--&lt;!&ndash;                                        string="(update)" class="oe_link oe_edit_only"&ndash;&gt;-->
+<!--&lt;!&ndash;                                        type="object" help="Recompute taxes and total"/>&ndash;&gt;-->
+<!--                                </div>-->
+<!--                                <field name="amount_tax_custom" nolabel="1" widget="monetary" options="{'currency_field': 'currency_id'}"/>-->
+<!--                                <field name="amount_total" class="oe_subtotal_footer_separator" widget="monetary" options="{'currency_field': 'currency_id'}"/>-->
+
+<!--                                <field name="residual" widget="monetary" options="{'currency_field': 'currency_id'}"/>-->
+<!--                                <field name="reconciled" invisible="1"/>-->
+<!--                            </group>-->
+
+<!--                                   </xpath>-->
+
+
+
+
+<!--                   <xpath expr="//field[@name='amount_tax']" position="replace">-->
+<!--                       <field name="amount_tax_custom" nolabel="1" widget="monetary" options="{'currency_field': 'currency_id'}"/>-->
+<!--                </xpath>-->
 
 <!--                <xpath expr="//field[@name='invoice_line']/tree/field[@name='discount']" position="attributes">-->
 <!--                    <attribute name="invisible">1</attribute>-->

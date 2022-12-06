@@ -528,41 +528,22 @@ class AccountInvoiceLine(models.Model):
 
     # @api.onchange('product_id')
 
-    @api.onchange('medicine_grp')
+    @api.onchange('product_id')
     def product_id_change_new(self):
         for rec in self:
-            domain = []
             if rec.product_id:
-                domain += [('medicine_1', '=', rec.product_id.id)]
-            # if rec.expiry_date:
-            #     domain += [('expiry_date', '=', result.expiry_date)]
+                rec.name = rec.product_id.name
 
-            if rec.product_of:
-                domain += [('company', '=', rec.product_of.id)]
-            if rec.medicine_grp:
-                domain += [('medicine_grp1', '=', rec.medicine_grp.id)]
-            if rec.medicine_name_packing:
-                domain += [('medicine_name_packing', '=', rec.medicine_name_packing.id)]
-            if rec.medicine_name_subcat:
-                domain += [('potency', '=', rec.medicine_name_subcat.id)]
-            rec.name = rec.product_id.name
-            rack_ids = []
-            stock = self.env['entry.stock'].search(domain)
-            for rec in stock:
-                rack_ids.append(rec.rack.id)
-            print("racks are", rack_ids)
-
-            return {'domain': {'medicine_rack': [('id', '=', rack_ids)]}}
-
-    @api.depends('medicine_rack')
-    def compute_stock_qty(self):
+    @api.onchange('medicine_grp')
+    def medicine_grp_change_new(self):
         for rec in self:
-            if rec.medicine_rack:
-                domain = [('rack', '=', rec.medicine_rack.id)]
+            if rec.invoice_id.type == 'out_invoice':
+                domain = []
                 if rec.product_id:
                     domain += [('medicine_1', '=', rec.product_id.id)]
                 # if rec.expiry_date:
                 #     domain += [('expiry_date', '=', result.expiry_date)]
+
                 if rec.product_of:
                     domain += [('company', '=', rec.product_of.id)]
                 if rec.medicine_grp:
@@ -571,8 +552,56 @@ class AccountInvoiceLine(models.Model):
                     domain += [('medicine_name_packing', '=', rec.medicine_name_packing.id)]
                 if rec.medicine_name_subcat:
                     domain += [('potency', '=', rec.medicine_name_subcat.id)]
-                stock_id = self.env['entry.stock'].search(domain,limit=1)
-                rec.rack_qty=stock_id.qty
+                rec.name = rec.product_id.name
+                rack_ids = []
+                stock = self.env['entry.stock'].search(domain)
+                for rec in stock:
+                    rack_ids.append(rec.rack.id)
+                print("racks are", rack_ids)
+
+                return {'domain': {'medicine_rack': [('id', '=', rack_ids)]}}
+
+    @api.onchange('medicine_rack')
+    def onchange_compute_stock_qty(self):
+        for rec in self:
+            if rec.invoice_id.type == 'out_invoice':
+                if rec.medicine_rack:
+                    domain = [('rack', '=', rec.medicine_rack.id)]
+                    if rec.product_id:
+                        domain += [('medicine_1', '=', rec.product_id.id)]
+                    # if rec.expiry_date:
+                    #     domain += [('expiry_date', '=', result.expiry_date)]
+                    if rec.product_of:
+                        domain += [('company', '=', rec.product_of.id)]
+                    if rec.medicine_grp:
+                        domain += [('medicine_grp1', '=', rec.medicine_grp.id)]
+                    if rec.medicine_name_packing:
+                        domain += [('medicine_name_packing', '=', rec.medicine_name_packing.id)]
+                    if rec.medicine_name_subcat:
+                        domain += [('potency', '=', rec.medicine_name_subcat.id)]
+                    stock_ids = self.env['entry.stock'].search(domain)
+                    rec.rack_qty = sum(stock_ids.mapped('qty'))
+
+    @api.depends('medicine_rack')
+    def compute_stock_qty(self):
+        for rec in self:
+            if rec.invoice_id.type == 'out_invoice':
+                if rec.medicine_rack:
+                    domain = [('rack', '=', rec.medicine_rack.id)]
+                    if rec.product_id:
+                        domain += [('medicine_1', '=', rec.product_id.id)]
+                    # if rec.expiry_date:
+                    #     domain += [('expiry_date', '=', result.expiry_date)]
+                    if rec.product_of:
+                        domain += [('company', '=', rec.product_of.id)]
+                    if rec.medicine_grp:
+                        domain += [('medicine_grp1', '=', rec.medicine_grp.id)]
+                    if rec.medicine_name_packing:
+                        domain += [('medicine_name_packing', '=', rec.medicine_name_packing.id)]
+                    if rec.medicine_name_subcat:
+                        domain += [('potency', '=', rec.medicine_name_subcat.id)]
+                    stock_ids = self.env['entry.stock'].search(domain)
+                    rec.rack_qty = sum(stock_ids.mapped('qty'))
 
     @api.onchange('medicine_name_subcat')
     def onchange_potency_id(self):

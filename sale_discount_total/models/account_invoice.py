@@ -87,6 +87,36 @@ class AccountInvoice(models.Model):
     # vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:
 
     # FOOTER TOTAL AMT CALCULATIONS
+
+
+    discount_category = fields.Many2one('cus.discount','Discount Category')
+    discount_type = fields.Selection([('percent', 'Percentage'), ('amount', 'Amount'),],default='percent', string='Discount Type', readonly=True,
+                                     states={'draft': [('readonly', False)]},)
+    discount_rate = fields.Float('Discount Rate',
+                                 digits_compute=dp.get_precision('Account'),
+                                 readonly=True,
+                                 states={'draft': [('readonly', False)]},)
+    # discount_rate = fields.Float('Discount Rate', compute='compute_discount_rate',
+    #                              digits_compute=dp.get_precision('Account'),
+    #                              readonly=True,
+    #                              states={'draft': [('readonly', False)]},)
+    amount_discount = fields.Float(string='Discount',
+                                   digits=dp.get_precision('Account'),
+                                   readonly=True, compute='_compute_amount',store=True)
+    amount_untaxed = fields.Float(string='Subtotal', digits=dp.get_precision('Account'),
+                                  readonly=True, compute='_compute_amount', track_visibility='always')
+    amount_tax = fields.Float(string='Tax', digits=dp.get_precision('Account'),
+                              readonly=True, compute='_compute_amount', store=True)
+    amount_total = fields.Float(string='Total', digits=dp.get_precision('Account'),
+                                readonly=True, compute='_compute_amount')
+    amount_tax_custom = fields.Float(string='Tax', digits=dp.get_precision('Account'),
+        store=True, readonly=True, compute='_compute_amount_tax')
+    
+    @api.depends('amount_total')
+    def _compute_amount_tax(self):
+        for rec in self:
+            rec.amount_tax_custom = rec.amount_total - (rec.amount_untaxed - rec.amount_discount)
+            rec.amount_tax = rec.amount_tax_custom
     @api.one
     @api.depends('invoice_line.price_subtotal', 'tax_line.amount')
     def _compute_amount(self):
@@ -108,10 +138,11 @@ class AccountInvoice(models.Model):
                     tax_total = tax_total+line.amount_amount1
             self.amount_untaxed = test2
             self.amount_tax = tax_total
+            self.amount_tax_custom = tax_total
             total_d = test2 - test3
-            self.amount_discount = round(total_d)
+            self.amount_discount = total_d
             # self.amount_total = ((test2 -total_d) + tax_total)
-            self.amount_total = test
+            self.amount_total = round(test)
         if self.partner_id.customer == True:
             disc = 0.0
             total_dis = 0
@@ -136,27 +167,10 @@ class AccountInvoice(models.Model):
             self.amount_total = round(test)
 
 
-    discount_category = fields.Many2one('cus.discount','Discount Category')
-    discount_type = fields.Selection([('percent', 'Percentage'), ('amount', 'Amount'),],default='percent', string='Discount Type', readonly=True,
-                                     states={'draft': [('readonly', False)]},)
-    discount_rate = fields.Float('Discount Rate',
-                                 digits_compute=dp.get_precision('Account'),
-                                 readonly=True,
-                                 states={'draft': [('readonly', False)]},)
-    # discount_rate = fields.Float('Discount Rate', compute='compute_discount_rate',
-    #                              digits_compute=dp.get_precision('Account'),
-    #                              readonly=True,
-    #                              states={'draft': [('readonly', False)]},)
-    amount_discount = fields.Float(string='Discount',
-                                   digits=dp.get_precision('Account'),
-                                   readonly=True, compute='_compute_amount',store=True)
-    amount_untaxed = fields.Float(string='Subtotal', digits=dp.get_precision('Account'),
-                                  readonly=True, compute='_compute_amount', track_visibility='always')
-    amount_tax = fields.Float(string='Tax', digits=dp.get_precision('Account'),
-                              readonly=True, compute='_compute_amount')
-    amount_total = fields.Float(string='Total', digits=dp.get_precision('Account'),
-                                readonly=True, compute='_compute_amount')
-
+    # @api.depends('amount_total')
+    # def _compute_amount_tax(self):
+    #     for invoice in self:
+    #         invoice.amount_tax = invoice.amount_total - (invoice.amount_untaxed - invoice.amount_discount)
 
 
     @api.onchange('discount_category')
@@ -187,7 +201,7 @@ class AccountInvoice(models.Model):
                 disc_amnt += (line.quantity * line.price_unit) * discount / 100
             total = val1 + val2 - disc_amnt
             self.amount_discount = disc_amnt
-            self.amount_tax = val2
+            # self.amount_tax = val2
             self.amount_total = total
 
     @api.onchange('discount_type', 'discount_rate')
