@@ -70,6 +70,7 @@ class PartialTransfer1(models.TransientModel):
                         'expiry_date':item.entry_stock_id.expiry_date,
                         'invoice_line_tax_id4':item.entry_stock_id.invoice_line_tax_id4,
                         'rack':self.racks_id_2.id,
+                        'hsn_code':item.entry_stock_id.hsn_code
 
                     }
                     self.env['entry.stock'].create(vals)
