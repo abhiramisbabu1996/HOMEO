@@ -281,122 +281,139 @@ class InvoiceLine(models.Model):
 
     @api.multi
     def write(self, vals):
-        if self.invoice_id.type == 'out_invoice':
-            # list_keys = ['product_id', 'expiry_date', 'medicine_rack',
-            #              'product_of', 'medicine_grp', 'medicine_name_packing',
-            #              'medicine_name_subcat', 'quantity', 'hsn_code']
+        for rec in self:
+            if rec.invoice_id.type == 'out_invoice':
+                # list_keys = ['product_id', 'expiry_date', 'medicine_rack',
+                #              'product_of', 'medicine_grp', 'medicine_name_packing',
+                #              'medicine_name_subcat', 'quantity', 'hsn_code']
 
-            # if vals.get('packing_slip') or self.state not in ['draft', 'holding_invoice']:
-            if vals.get('packing_slip') or self.invoice_id.state == 'packing_slip':
-                if ('product_id', 'expiry_date', 'medicine_rack', 'product_of', 'medicine_grp', 'medicine_name_packing', 'medicine_name_subcat', 'quantity', 'hsn_code') in vals:
-                    if vals.get('quantity'):
-                        quantity = vals.get('quantity')
-                    else:
-                        quantity = self.quantity
+                # if vals.get('packing_slip') or self.state not in ['draft', 'holding_invoice']:
+                if vals.get('packing_slip') or rec.invoice_id.state == 'packing_slip':
+                    list_item = ['product_id', 'expiry_date', 'medicine_rack', 'product_of', 'medicine_grp', 'medicine_name_packing', 'medicine_name_subcat', 'quantity', 'hsn_code']
+                    flag = 0
+                    for item in list_item:
+                        if vals.get(item):
+                            flag = 1
+                    if flag:
+                        if vals.get('quantity'):
+                            quantity = vals.get('quantity')
+                        else:
+                            quantity = rec.quantity
 
-                    domain = [('qty', '>=',quantity)]
-                    if vals.get('product_id'):
-                        domain += [('medicine_1', '=', vals.get('product_id'))]
-                    else:
-                        if self.product_id:
-                            domain += [('medicine_1', '=', self.product_id.id)]
+                        domain = [('qty', '>=',quantity)]
+                        if vals.get('product_id'):
+                            domain += [('medicine_1', '=', vals.get('product_id'))]
+                        else:
+                            if rec.product_id:
+                                domain += [('medicine_1', '=', rec.product_id.id)]
 
-                    if vals.get('expiry_date'):
-                        domain += [('medicine_1', '=', vals.get('expiry_date'))]
-                    else:
-                        if self.expiry_date:
-                            domain += [('expiry_date', '=', self.expiry_date)]
-
-                    if vals.get('medicine_rack'):
-                        domain += [('medicine_1', '=', vals.get('medicine_rack'))]
-                    else:
-                        if self.medicine_rack:
-                            domain += [('rack', '=', self.medicine_rack.id)]
-
-                    if vals.get('product_of'):
-                        domain += [('medicine_1', '=', vals.get('product_of'))]
-                    else:
-                        if self.product_of:
-                            domain += [('company', '=', self.product_of.id)]
-
-                    if vals.get('medicine_grp'):
-                        domain += [('medicine_1', '=', vals.get('medicine_grp'))]
-                    else:
-                        if self.medicine_grp:
-                            domain += [('medicine_grp1', '=', self.medicine_grp.id)]
-
-                    if vals.get('medicine_name_packing'):
-                        domain += [('medicine_1', '=', vals.get('medicine_name_packing'))]
-                    else:
-                        if self.medicine_name_packing:
-                            domain += [('medicine_name_packing', '=', self.medicine_name_packing.id)]
-
-                    if vals.get('medicine_name_subcat'):
-                        domain += [('medicine_1', '=', vals.get('medicine_name_subcat'))]
-                    else:
-                        if self.medicine_name_subcat:
-                            domain += [('potency', '=', self.medicine_name_subcat.id)]
-
-                    if vals.get('hsn_code'):
-                        domain += [('medicine_1', '=', vals.get('hsn_code'))]
-                    else:
-                        if self.hsn_code:
-                            domain += [('hsn_code', '=', self.hsn_code)]
-                    # domain += [('qty', '=', 0)]
-                    entry_stock_ids = self.env['entry.stock'].search(domain, order='id asc', limit=1)
-                    if sum(entry_stock_ids.mapped('qty')) <= 0 or not entry_stock_ids:
-                        if vals.get('medicine_rack'):
-                            domain.remove(('rack', '=', vals.get('medicine_rack')))
-                        if self.medicine_rack:
-                            domain.remove(('rack', '=', self.medicine_rack.id))
-                        if self.expiry_date:
-                            domain.remove(('expiry_date', '=', self.expiry_date))
                         if vals.get('expiry_date'):
-                            domain.remove(('expiry_date', '=', vals.get('expiry_date')))
-                        entry_stock_ids = self.env['entry.stock'].search(domain, order='id asc')
-                    if not entry_stock_ids:
-                        domain.remove(('qty', '>=',quantity))
-                        domain += [('qty', '>=', 0)]
-                        entry_stock_ids = self.env['entry.stock'].search(domain, order='id asc')
+                            domain += [('medicine_1', '=', vals.get('expiry_date'))]
+                        else:
+                            if rec.expiry_date:
+                                domain += [('expiry_date', '=', rec.expiry_date)]
 
-                    if sum(entry_stock_ids.mapped('qty')) <= 0 or not entry_stock_ids:
-                        raise Warning(
-                            _('Only we have %s Products with current combination in stock') % str(int(self.stock_entry_qty)+int(sum(entry_stock_ids.mapped('qty')))))
-                    quantity_comp = quantity
-                    for stock in entry_stock_ids:
-                        if quantity_comp > 0:
-                            if stock.qty >= quantity_comp:
-                                stock.write({
-                                    'qty': stock.qty - quantity_comp,
-                                })
-                                # quantity -= stock.qty
-                                break
-                            else:
-                                quantity_comp -= stock.qty
-                                stock.write({
-                                    'qty': 0
-                                })
-                    vals['stock_entry_qty'] = quantity
-        res = super(InvoiceLine, self).write(vals)
-        if self.invoice_id.type == 'in_invoice':
-            vals = {
-                'expiry_date': self.expiry_date,
-                'manf_date': self.manf_date,
-                'company': self.product_of.id,
-                'medicine_1': self.product_id.id,
-                'potency': self.medicine_name_subcat.id,
-                'medicine_name_packing': self.medicine_name_packing.id,
-                'medicine_grp1': self.medicine_grp.id,
-                'batch_2': self.batch_2.id,
-                'mrp': self.price_unit,
-                'qty': self.quantity,
-                'rack': self.medicine_rack.id,
-                'hsn_code': self.hsn_code,
-                'discount': self.discount,
-                'invoice_line_tax_id4': self.invoice_line_tax_id4,
-            }
-            result = self.stock_entry_id.update(vals)
-        return res
+                        if vals.get('medicine_rack'):
+                            domain += [('medicine_1', '=', vals.get('medicine_rack'))]
+                        else:
+                            if rec.medicine_rack:
+                                domain += [('rack', '=', rec.medicine_rack.id)]
+
+                        if vals.get('product_of'):
+                            domain += [('medicine_1', '=', vals.get('product_of'))]
+                        else:
+                            if rec.product_of:
+                                domain += [('company', '=', rec.product_of.id)]
+
+                        if vals.get('medicine_grp'):
+                            domain += [('medicine_1', '=', vals.get('medicine_grp'))]
+                        else:
+                            if rec.medicine_grp:
+                                domain += [('medicine_grp1', '=', rec.medicine_grp.id)]
+
+                        if vals.get('medicine_name_packing'):
+                            domain += [('medicine_1', '=', vals.get('medicine_name_packing'))]
+                        else:
+                            if rec.medicine_name_packing:
+                                domain += [('medicine_name_packing', '=', rec.medicine_name_packing.id)]
+
+                        if vals.get('medicine_name_subcat'):
+                            domain += [('medicine_1', '=', vals.get('medicine_name_subcat'))]
+                        else:
+                            if rec.medicine_name_subcat:
+                                domain += [('potency', '=', rec.medicine_name_subcat.id)]
+
+                        if vals.get('hsn_code'):
+                            domain += [('medicine_1', '=', vals.get('hsn_code'))]
+                        else:
+                            if rec.hsn_code:
+                                domain += [('hsn_code', '=', rec.hsn_code)]
+                        # domain += [('qty', '=', 0)]
+                        entry_stock_ids = rec.env['entry.stock'].search(domain, order='id asc', limit=1)
+                        if sum(entry_stock_ids.mapped('qty')) <= 0 or not entry_stock_ids:
+                            if vals.get('medicine_rack'):
+                                domain.remove(('rack', '=', vals.get('medicine_rack')))
+                            if rec.medicine_rack:
+                                domain.remove(('rack', '=', rec.medicine_rack.id))
+                            if rec.expiry_date:
+                                domain.remove(('expiry_date', '=', rec.expiry_date))
+                            if vals.get('expiry_date'):
+                                domain.remove(('expiry_date', '=', vals.get('expiry_date')))
+                            entry_stock_ids = rec.env['entry.stock'].search(domain, order='id asc')
+                        if not entry_stock_ids:
+                            domain.remove(('qty', '>=',quantity))
+                            domain += [('qty', '>=', 0)]
+                            entry_stock_ids = rec.env['entry.stock'].search(domain, order='id asc')
+
+                        if sum(entry_stock_ids.mapped('qty')) <= 0 or not entry_stock_ids:
+                            raise Warning(
+                                _('Only we have %s Products with current combination in stock') % str(int(rec.stock_entry_qty)+int(sum(entry_stock_ids.mapped('qty')))))
+                        quantity_comp = quantity
+                        inverse = False
+                        if rec.stock_entry_qty < quantity:
+                            quantity_comp = vals.get('quantity') - rec.stock_entry_qty
+                        else:
+                            quantity_comp = rec.stock_entry_qty - vals.get('quantity')
+                            inverse = True
+                        for stock in entry_stock_ids:
+                            if quantity_comp > 0:
+                                if stock.qty >= quantity_comp:
+                                    if inverse:
+                                        stock.write({
+                                            'qty': abs(stock.qty + quantity_comp),
+                                        })
+                                    else:
+                                        stock.write({
+                                            'qty': abs(stock.qty - quantity_comp),
+                                        })
+                                    # quantity -= stock.qty
+                                    break
+                                else:
+                                    quantity_comp = (quantity_comp - stock.qty)
+                                    stock.write({
+                                        'qty': 0
+                                    })
+                        vals['stock_entry_qty'] = quantity
+            res = super(InvoiceLine, rec).write(vals)
+            if rec.invoice_id.type == 'in_invoice':
+                vals = {
+                    'expiry_date': rec.expiry_date,
+                    'manf_date': rec.manf_date,
+                    'company': rec.product_of.id,
+                    'medicine_1': rec.product_id.id,
+                    'potency': rec.medicine_name_subcat.id,
+                    'medicine_name_packing': rec.medicine_name_packing.id,
+                    'medicine_grp1': rec.medicine_grp.id,
+                    'batch_2': rec.batch_2.id,
+                    'mrp': rec.price_unit,
+                    'qty': rec.quantity,
+                    'rack': rec.medicine_rack.id,
+                    'hsn_code': rec.hsn_code,
+                    'discount': rec.discount,
+                    'invoice_line_tax_id4': rec.invoice_line_tax_id4,
+                }
+                result = rec.stock_entry_id.update(vals)
+            return res
 
     @api.multi
     def unlink(self):
